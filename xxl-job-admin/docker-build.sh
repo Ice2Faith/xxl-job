@@ -2,7 +2,7 @@
 
 VERSION=2.4.1
 
-TAG="xxl-job:$VERSION"
+TAG="xxl-job-multiply:$VERSION"
 
 echo build $TAG ...
 
