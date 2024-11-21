@@ -2,7 +2,7 @@
 
 set VERSION=2.4.1
 
-set TAG=xxl-job:%VERSION%
+set TAG=xxl-job-multiply:%VERSION%
 
 echo build image %TAG% ...
 

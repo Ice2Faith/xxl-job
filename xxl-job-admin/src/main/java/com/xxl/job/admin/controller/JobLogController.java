@@ -18,8 +18,6 @@ import com.xxl.job.core.biz.model.LogParam;
 import com.xxl.job.core.biz.model.LogResult;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.util.DateUtil;
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -30,10 +28,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.util.HtmlUtils;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.*;
 
 /**
  * index controller
@@ -97,7 +94,7 @@ public class JobLogController {
 
 		// valid permission
 		PermissionInterceptor.validJobGroupPermission(request, jobGroup);	// 仅管理员支持查询全部；普通用户仅支持查询有权限的 jobGroup
-		
+
 		// parse param
 		Date triggerTimeStart = null;
 		Date triggerTimeEnd = null;
