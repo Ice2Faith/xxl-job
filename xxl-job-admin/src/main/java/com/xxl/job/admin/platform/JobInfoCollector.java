@@ -3,6 +3,7 @@ package com.xxl.job.admin.platform;
 import com.xxl.job.admin.core.model.XxlJobInfo;
 import com.xxl.job.admin.dao.XxlJobInfoDao;
 import lombok.Data;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -22,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @Data
 @Component
-public class JobInfoCollector implements ApplicationRunner {
+public class JobInfoCollector implements InitializingBean {
     @Resource
     private XxlJobInfoDao xxlJobInfoDao;
 
@@ -30,7 +31,7 @@ public class JobInfoCollector implements ApplicationRunner {
     private static ConcurrentHashMap<Long, XxlJobInfo> newestMap=new ConcurrentHashMap<>();
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void afterPropertiesSet() throws Exception {
         startCollectorThread();
     }
 
