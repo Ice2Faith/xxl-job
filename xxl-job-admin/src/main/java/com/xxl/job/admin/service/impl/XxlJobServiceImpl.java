@@ -18,6 +18,7 @@ import com.xxl.job.admin.platform.pageable.data.PageDto;
 import com.xxl.job.admin.service.XxlJobService;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.enums.ExecutorBlockStrategyEnum;
+import com.xxl.job.core.enums.RegistryConfig;
 import com.xxl.job.core.glue.GlueTypeEnum;
 import com.xxl.job.core.util.DateUtil;
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ import org.springframework.util.StringUtils;
 import jakarta.annotation.Resource;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -54,8 +56,11 @@ public class XxlJobServiceImpl implements XxlJobService {
 
 		// page list
 		PageDto page=PageDto.of(start/length+1,length);
-		List<XxlJobInfo> list = xxlJobInfoDao.pageList(page, jobGroup, triggerStatus, jobDesc, executorHandler, author);
-		int list_count = xxlJobInfoDao.pageListCount(jobGroup, triggerStatus, jobDesc, executorHandler, author);
+		long ts = System.currentTimeMillis();
+		long newestTriggerTs = ts - TimeUnit.MINUTES.toMillis(30);
+		Date newestTriggerTime=new Date(newestTriggerTs);
+		List<XxlJobInfo> list = xxlJobInfoDao.pageList(page, newestTriggerTime,jobGroup, triggerStatus, jobDesc, executorHandler, author);
+		int list_count = xxlJobInfoDao.pageListCount(newestTriggerTime,jobGroup, triggerStatus, jobDesc, executorHandler, author);
 
 		// package result
 		Map<String, Object> maps = new HashMap<String, Object>();
