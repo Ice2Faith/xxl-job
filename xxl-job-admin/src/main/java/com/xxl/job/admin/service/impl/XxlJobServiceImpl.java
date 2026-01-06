@@ -13,12 +13,12 @@ import com.xxl.job.admin.core.thread.JobTriggerPoolHelper;
 import com.xxl.job.admin.core.trigger.TriggerTypeEnum;
 import com.xxl.job.admin.core.util.I18nUtil;
 import com.xxl.job.admin.dao.*;
+import com.xxl.job.admin.platform.JobInfoCollector;
 import com.xxl.job.admin.platform.data.LogBatchOperateDto;
 import com.xxl.job.admin.platform.pageable.data.PageDto;
 import com.xxl.job.admin.service.XxlJobService;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.enums.ExecutorBlockStrategyEnum;
-import com.xxl.job.core.enums.RegistryConfig;
 import com.xxl.job.core.glue.GlueTypeEnum;
 import com.xxl.job.core.util.DateUtil;
 import org.slf4j.Logger;
@@ -61,6 +61,8 @@ public class XxlJobServiceImpl implements XxlJobService {
 		Date newestTriggerTime=new Date(newestTriggerTs);
 		List<XxlJobInfo> list = xxlJobInfoDao.pageList(page, newestTriggerTime,jobGroup, triggerStatus, jobDesc, executorHandler, author);
 		int list_count = xxlJobInfoDao.pageListCount(newestTriggerTime,jobGroup, triggerStatus, jobDesc, executorHandler, author);
+
+		JobInfoCollector.fillIfAbsentNewestFields(list);
 
 		// package result
 		Map<String, Object> maps = new HashMap<String, Object>();
