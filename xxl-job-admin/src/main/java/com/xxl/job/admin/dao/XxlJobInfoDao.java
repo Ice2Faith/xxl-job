@@ -18,6 +18,8 @@ import java.util.List;
 @Mapper
 public interface XxlJobInfoDao {
 
+	public List<XxlJobInfo> newestJobExecuteStatusList();
+
 	public List<XxlJobInfo> pageList(@Param("page")PageDto page,
 									 @Param("newestTriggerTime") Date newestTriggerTime,
 									 @Param("jobGroup") int jobGroup,
