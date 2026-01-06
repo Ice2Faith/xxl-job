@@ -187,7 +187,10 @@ public class JobGroupController {
 	public ReturnT<String> remove(@RequestParam("id") int id){
 
 		// valid
-		int count = xxlJobInfoDao.pageListCount( id, -1,  null, null, null);
+		long ts = System.currentTimeMillis();
+		long newestTriggerTs = ts - TimeUnit.MINUTES.toMillis(30);
+		Date newestTriggerTime=new Date(newestTriggerTs);
+		int count = xxlJobInfoDao.pageListCount( newestTriggerTime,id, -1,  null, null, null);
 		if (count > 0) {
 			return new ReturnT<String>(500, I18nUtil.getString("jobgroup_del_limit_0") );
 		}
