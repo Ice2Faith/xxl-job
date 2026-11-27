@@ -9,7 +9,7 @@
 
     <#-- biz start（1/5 style） -->
 	<!-- DataTables -->
-  	<link rel="stylesheet" href="${request.contextPath}/static/adminlte/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css">
+  	<link rel="stylesheet" href="./static/adminlte/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css">
     <#-- biz end（1/5 end） -->
 
 </head>
@@ -207,9 +207,9 @@
 
 <#-- biz start（5/5 script） -->
 <!-- DataTables -->
-<script src="${request.contextPath}/static/adminlte/bower_components/datatables.net/js/jquery.dataTables.min.js"></script>
-<script src="${request.contextPath}/static/adminlte/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
-<script src="${request.contextPath}/static/js/jobgroup.index.1.js"></script>
+<script src="./static/adminlte/bower_components/datatables.net/js/jquery.dataTables.min.js"></script>
+<script src="./static/adminlte/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+<script src="./static/js/jobgroup.index.1.js"></script>
 <#-- biz end（5/5 script） -->
 
 </body>

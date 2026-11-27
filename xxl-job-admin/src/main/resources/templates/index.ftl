@@ -7,7 +7,7 @@
 	<@netCommon.commonStyle />
 
     <#-- biz start（1/5 style） -->
-    <link rel="stylesheet" href="${request.contextPath}/static/adminlte/bower_components/bootstrap-daterangepicker/daterangepicker.css">
+    <link rel="stylesheet" href="./static/adminlte/bower_components/bootstrap-daterangepicker/daterangepicker.css">
     <#-- biz end（1/5 end） -->
 
 </head>
@@ -146,11 +146,11 @@
 <#-- biz start（5/5 script） -->
 
 <!-- daterangepicker -->
-<script src="${request.contextPath}/static/adminlte/bower_components/moment/moment.min.js"></script>
-<script src="${request.contextPath}/static/adminlte/bower_components/bootstrap-daterangepicker/daterangepicker.js"></script>
+<script src="./static/adminlte/bower_components/moment/moment.min.js"></script>
+<script src="./static/adminlte/bower_components/bootstrap-daterangepicker/daterangepicker.js"></script>
 <#-- echarts -->
-<script src="${request.contextPath}/static/plugins/echarts/echarts.common.min.js"></script>
-<script src="${request.contextPath}/static/js/index.js"></script>
+<script src="./static/plugins/echarts/echarts.common.min.js"></script>
+<script src="./static/js/index.js"></script>
 
 <#-- biz end（5/5 script） -->
 </body>

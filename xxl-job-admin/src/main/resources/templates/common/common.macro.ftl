@@ -6,7 +6,7 @@
 
 	<#-- favicon、logo -->
 	<title>${I18n.admin_name}</title>
-	<link rel="icon" href="${request.contextPath}/static/favicon.ico" />
+	<link rel="icon" href="./static/favicon.ico" />
 
 	<#-- meta -->
 	<meta charset="utf-8">
@@ -16,15 +16,15 @@
 
 	<#-- link style -->
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="${request.contextPath}/static/adminlte/bower_components/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./static/adminlte/bower_components/bootstrap/css/bootstrap.min.css">
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="${request.contextPath}/static/adminlte/bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./static/adminlte/bower_components/font-awesome/css/font-awesome.min.css">
     <!-- Ionicons -->
-    <link rel="stylesheet" href="${request.contextPath}/static/adminlte/bower_components/Ionicons/css/ionicons.min.css">
+    <link rel="stylesheet" href="./static/adminlte/bower_components/Ionicons/css/ionicons.min.css">
     <!-- Theme style -->
-    <link rel="stylesheet" href="${request.contextPath}/static/adminlte/dist/css/AdminLTE.min.css">
+    <link rel="stylesheet" href="./static/adminlte/dist/css/AdminLTE.min.css">
     <!-- AdminLTE Skins. Choose a skin from the css/skins folder instead of downloading all of them to reduce the load. -->
-    <link rel="stylesheet" href="${request.contextPath}/static/adminlte/dist/css/skins/_all-skins.min.css">
+    <link rel="stylesheet" href="./static/adminlte/dist/css/skins/_all-skins.min.css">
 
 	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -34,7 +34,7 @@
     <![endif]-->
 
 	<!-- pace -->
-	<link rel="stylesheet" href="${request.contextPath}/static/adminlte/bower_components/PACE/themes/blue/pace-theme-flash.css">
+	<link rel="stylesheet" href="./static/adminlte/bower_components/PACE/themes/blue/pace-theme-flash.css">
 
 	<style>
 		html{
@@ -127,34 +127,34 @@
 
 <#macro commonScript>
 	<!-- jQuery -->
-	<script src="${request.contextPath}/static/adminlte/bower_components/jquery/jquery.min.js"></script>
+	<script src="./static/adminlte/bower_components/jquery/jquery.min.js"></script>
 	<!-- Bootstrap -->
-	<script src="${request.contextPath}/static/adminlte/bower_components/bootstrap/js/bootstrap.min.js"></script>
+	<script src="./static/adminlte/bower_components/bootstrap/js/bootstrap.min.js"></script>
 	<!-- PACE -->
-	<script src="${request.contextPath}/static/adminlte/bower_components/PACE/pace.min.js"></script>
+	<script src="./static/adminlte/bower_components/PACE/pace.min.js"></script>
 	<!-- jquery.slimscroll -->
-	<script src="${request.contextPath}/static/adminlte/bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
+	<script src="./static/adminlte/bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
 	<!-- FastClick -->
-	<script src="${request.contextPath}/static/adminlte/bower_components/fastclick/fastclick.js"></script>
+	<script src="./static/adminlte/bower_components/fastclick/fastclick.js"></script>
 
     <#-- jquery cookie -->
-	<script src="${request.contextPath}/static/plugins/jquery/jquery.cookie.js"></script>
+	<script src="./static/plugins/jquery/jquery.cookie.js"></script>
 	<#-- jquery.validate -->
-	<script src="${request.contextPath}/static/plugins/jquery/jquery.validate.min.js"></script>
+	<script src="./static/plugins/jquery/jquery.validate.min.js"></script>
 	<#-- layer -->
-	<script src="${request.contextPath}/static/plugins/layer/layer.js"></script>
+	<script src="./static/plugins/layer/layer.js"></script>
 
 	<!-- base config -->
     <script>
-		var base_url = '${request.contextPath}';
+		var base_url = '.';
         var I18n = ${I18nUtil.getMultString()};
 	</script>
 
 	<!-- AdminLTE App -->
-	<script src="${request.contextPath}/static/adminlte/dist/js/adminlte.min.js"></script>
+	<script src="./static/adminlte/dist/js/adminlte.min.js"></script>
 
 	<#-- common js -->
-	<script src="${request.contextPath}/static/js/common.1.js"></script>
+	<script src="./static/js/common.1.js"></script>
 
 	<script>
 		setTimeout(function(){
@@ -182,15 +182,15 @@
 
 	</script>
 
-	<script src="${request.contextPath}/static/plugins/com/antherd/sm-crypto-0.3.2/sm2.js"></script>
-	<script src="${request.contextPath}/static/plugins/com/antherd/sm-crypto-0.3.2/sm3.js"></script>
+	<script src="./static/plugins/com/antherd/sm-crypto-0.3.2/sm2.js"></script>
+	<script src="./static/plugins/com/antherd/sm-crypto-0.3.2/sm3.js"></script>
 </#macro>
 
 <#-- page module: Header-->
 <#macro commonHeader>
 	<header class="main-header">
 		<!-- header-logo -->
-		<a href="${request.contextPath}/" class="logo">
+		<a href="./" class="logo">
 			<span class="logo-mini"><b>XXL</b></span>
 			<span class="logo-lg"><b>${I18n.admin_name}</b></span>
 		</a>
@@ -281,15 +281,15 @@
 			<!-- sidebar menu: : style can be found in sidebar.less -->
 			<ul class="sidebar-menu">
                 <li class="header">${I18n.system_nav}</li>
-                <li class="nav-click <#if pageName == "index">active</#if>" ><a href="${request.contextPath}/"><i class="fa fa-circle-o text-aqua"></i><span>${I18n.job_dashboard_name}</span></a></li>
-				<li class="nav-click <#if pageName == "jobinfo">active</#if>" ><a href="${request.contextPath}/jobinfo"><i class="fa fa-circle-o text-yellow"></i><span>${I18n.jobinfo_name}</span></a></li>
-				<li class="nav-click <#if pageName == "joblog">active</#if>" ><a href="${request.contextPath}/joblog"><i class="fa fa-circle-o text-green"></i><span>${I18n.joblog_name}</span></a></li>
+                <li class="nav-click <#if pageName == "index">active</#if>" ><a href="./"><i class="fa fa-circle-o text-aqua"></i><span>${I18n.job_dashboard_name}</span></a></li>
+				<li class="nav-click <#if pageName == "jobinfo">active</#if>" ><a href="./jobinfo"><i class="fa fa-circle-o text-yellow"></i><span>${I18n.jobinfo_name}</span></a></li>
+				<li class="nav-click <#if pageName == "joblog">active</#if>" ><a href="./joblog"><i class="fa fa-circle-o text-green"></i><span>${I18n.joblog_name}</span></a></li>
 				<#if xxl_sso_user.roleList?? && xxl_sso_user.roleList?seq_contains("ADMIN") >
-                    <li class="nav-click <#if pageName == "jobgroup">active</#if>" ><a href="${request.contextPath}/jobgroup"><i class="fa fa-circle-o text-red"></i><span>${I18n.jobgroup_name}</span></a></li>
-                    <li class="nav-click <#if pageName == "user">active</#if>" ><a href="${request.contextPath}/user"><i class="fa fa-circle-o text-purple"></i><span>${I18n.user_manage}</span></a></li>
-					<li class="nav-click <#if pageName == "emailconfig">active</#if>" ><a href="${request.contextPath}/emailconfig"><i class="fa fa-circle-o text-orange"></i><span>${I18n.emailconfig_name}</span></a></li>
+                    <li class="nav-click <#if pageName == "jobgroup">active</#if>" ><a href="./jobgroup"><i class="fa fa-circle-o text-red"></i><span>${I18n.jobgroup_name}</span></a></li>
+                    <li class="nav-click <#if pageName == "user">active</#if>" ><a href="./user"><i class="fa fa-circle-o text-purple"></i><span>${I18n.user_manage}</span></a></li>
+					<li class="nav-click <#if pageName == "emailconfig">active</#if>" ><a href="./emailconfig"><i class="fa fa-circle-o text-orange"></i><span>${I18n.emailconfig_name}</span></a></li>
 				</#if>
-				<li class="nav-click <#if pageName == "help">active</#if>" ><a href="${request.contextPath}/help"><i class="fa fa-circle-o text-gray"></i><span>${I18n.job_help}</span></a></li>
+				<li class="nav-click <#if pageName == "help">active</#if>" ><a href="./help"><i class="fa fa-circle-o text-gray"></i><span>${I18n.job_help}</span></a></li>
 			</ul>
 		</section>
 		<!-- /.sidebar -->
