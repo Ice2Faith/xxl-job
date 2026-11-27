@@ -9,7 +9,7 @@
 
     <#-- biz start（1/5 style） -->
 	<!-- DataTables -->
-  	<link rel="stylesheet" href="${request.contextPath}/static/adminlte/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css">
+  	<link rel="stylesheet" href="./static/adminlte/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css">
     <#-- biz end（1/5 end） -->
 
 </head>
@@ -622,13 +622,13 @@ exit 0
 
 <#-- biz start（5/5 script） -->
 <!-- DataTables -->
-<script src="${request.contextPath}/static/adminlte/bower_components/datatables.net/js/jquery.dataTables.min.js"></script>
-<script src="${request.contextPath}/static/adminlte/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+<script src="./static/adminlte/bower_components/datatables.net/js/jquery.dataTables.min.js"></script>
+<script src="./static/adminlte/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
 <!-- moment -->
-<script src="${request.contextPath}/static/adminlte/bower_components/moment/moment.min.js"></script>
+<script src="./static/adminlte/bower_components/moment/moment.min.js"></script>
 <#-- cronGen -->
-<script src="${request.contextPath}/static/plugins/cronGen/cronGen<#if I18n.admin_i18n?default('')?length gt 0 >_${I18n.admin_i18n}</#if>.js"></script>
-<script src="${request.contextPath}/static/js/jobinfo.index.1.js"></script>
+<script src="./static/plugins/cronGen/cronGen<#if I18n.admin_i18n?default('')?length gt 0 >_${I18n.admin_i18n}</#if>.js"></script>
+<script src="./static/js/jobinfo.index.1.js"></script>
 <#-- biz end（5/5 script） -->
 
 </body>
