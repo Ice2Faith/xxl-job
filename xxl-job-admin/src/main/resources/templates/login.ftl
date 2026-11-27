@@ -7,7 +7,7 @@
 	<#-- commonStyle -->
 	<@netCommon.commonStyle />
 	<!-- iCheck -->
-    <link rel="stylesheet" href="${request.contextPath}/static/adminlte/plugins/iCheck/square/blue.css">
+    <link rel="stylesheet" href="./static/adminlte/plugins/iCheck/square/blue.css">
 	<title>${I18n.admin_name}</title>
 	<style>
 		.login-footer{
@@ -72,11 +72,11 @@
 	</footer>
 <@netCommon.commonScript />
 <!-- icheck -->
-<script src="${request.contextPath}/static/plugins/com/antherd/sm-crypto-0.3.2/sm3.js"></script>
-<script src="${request.contextPath}/static/plugins/com/antherd/sm-crypto-0.3.2/sm2.js"></script>
-<script src="${request.contextPath}/static/adminlte/plugins/iCheck/icheck.min.js"></script>
+<script src="./static/plugins/com/antherd/sm-crypto-0.3.2/sm3.js"></script>
+<script src="./static/plugins/com/antherd/sm-crypto-0.3.2/sm2.js"></script>
+<script src="./static/adminlte/plugins/iCheck/icheck.min.js"></script>
 <!-- js file -->
-<script src="${request.contextPath}/static/js/login.1.js"></script>
+<script src="./static/js/login.1.js"></script>
 
 </body>
 </html>
