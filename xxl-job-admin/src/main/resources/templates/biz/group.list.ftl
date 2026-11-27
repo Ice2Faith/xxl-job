@@ -6,8 +6,8 @@
 
 	<!-- 1-style start -->
 	<@netCommon.commonStyle />
-	<link rel="stylesheet" href="${request.contextPath}/static/plugins/bootstrap-table/bootstrap-table.min.css">
-	<link rel="stylesheet" href="${request.contextPath}/static/adminlte/plugins/iCheck/square/blue.css">
+	<link rel="stylesheet" href="./static/plugins/bootstrap-table/bootstrap-table.min.css">
+	<link rel="stylesheet" href="./static/adminlte/plugins/iCheck/square/blue.css">
 	<!-- 1-style end -->
 
 </head>
@@ -180,11 +180,11 @@
 
 <!-- 3-script start -->
 <@netCommon.commonScript />
-<script src="${request.contextPath}/static/plugins/bootstrap-table/bootstrap-table.min.js"></script>
-<script src="${request.contextPath}/static/plugins/bootstrap-table/locale/<#if I18n.admin_i18n?? && I18n.admin_i18n == 'en'>bootstrap-table-en-US.min.js<#else>bootstrap-table-zh-CN.min.js</#if>"></script>
-<script src="${request.contextPath}/static/adminlte/plugins/iCheck/icheck.min.js"></script>
+<script src="./static/plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="./static/plugins/bootstrap-table/locale/<#if I18n.admin_i18n?? && I18n.admin_i18n == 'en'>bootstrap-table-en-US.min.js<#else>bootstrap-table-zh-CN.min.js</#if>"></script>
+<script src="./static/adminlte/plugins/iCheck/icheck.min.js"></script>
 <#-- admin table -->
-<script src="${request.contextPath}/static/biz/common/admin.table.js"></script>
+<script src="./static/biz/common/admin.table.js"></script>
 <script>
 	$(function() {
 

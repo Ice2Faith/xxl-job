@@ -26,13 +26,13 @@
 	<div class="dialog"> 
 	    <h1>System Error</h1>
 		<p><#if exceptionMsg?exists>${exceptionMsg}<#else>Unknown Error.</#if></p>
-		<a href="javascript:window.location.href='${request.contextPath}/'" id="go_back" >Back</a>
+		<a href="javascript:window.location.href='./'" id="go_back" >Back</a>
 	    </p> 
 	</div>
 
 <!-- 3-script start -->
-<script src="${request.contextPath}/static/adminlte/bower_components/jquery/jquery.min.js"></script>
-<script src="${request.contextPath}/static/biz/common/admin.util.js"></script>
+<script src="./static/adminlte/bower_components/jquery/jquery.min.js"></script>
+<script src="./static/biz/common/admin.util.js"></script>
 <script>
 	$(function() {
 		if (isOpenWithTab()) {

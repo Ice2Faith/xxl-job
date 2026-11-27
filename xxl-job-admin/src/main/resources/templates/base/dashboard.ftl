@@ -6,7 +6,7 @@
 
     <!-- 1-style start -->
     <@netCommon.commonStyle />
-    <link rel="stylesheet" href="${request.contextPath}/static/adminlte/bower_components/bootstrap-daterangepicker/daterangepicker.css">
+    <link rel="stylesheet" href="./static/adminlte/bower_components/bootstrap-daterangepicker/daterangepicker.css">
     <!-- 1-style end -->
 
 </head>
@@ -121,10 +121,10 @@
 <!-- 3-script start -->
 <@netCommon.commonScript />
 <!-- daterangepicker -->
-<script src="${request.contextPath}/static/adminlte/bower_components/moment/moment.min.js"></script>
-<script src="${request.contextPath}/static/adminlte/bower_components/bootstrap-daterangepicker/daterangepicker.js"></script>
+<script src="./static/adminlte/bower_components/moment/moment.min.js"></script>
+<script src="./static/adminlte/bower_components/bootstrap-daterangepicker/daterangepicker.js"></script>
 <!-- echarts -->
-<script src="${request.contextPath}/static/plugins/echarts/echarts.common.min.js"></script>
+<script src="./static/plugins/echarts/echarts.common.min.js"></script>
 <script>
 $(function () {
 
