@@ -7,7 +7,7 @@
 	<!-- 1-style start -->
 	<@netCommon.commonStyle />
 	<!-- iCheck -->
-	<link rel="stylesheet" href="${request.contextPath}/static/adminlte/plugins/iCheck/square/blue.css">
+	<link rel="stylesheet" href="./static/adminlte/plugins/iCheck/square/blue.css">
 	<!-- 1-style end -->
 
 	<style>
@@ -74,7 +74,7 @@
 
 <!-- 3-script start -->
 <@netCommon.commonScript />
-<script src="${request.contextPath}/static/adminlte/plugins/iCheck/icheck.min.js"></script>
+<script src="./static/adminlte/plugins/iCheck/icheck.min.js"></script>
 
 <script>
 $(function () {

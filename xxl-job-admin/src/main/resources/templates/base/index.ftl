@@ -6,7 +6,7 @@
 
     <!-- 1-style start -->
     <@netCommon.commonStyle />
-    <link rel="stylesheet" href="${request.contextPath}/static/biz/common/admin.tab.css?v=${I18n.admin_version}">
+    <link rel="stylesheet" href="./static/biz/common/admin.tab.css?v=${I18n.admin_version}">
     <!-- 1-style end -->
 
 </head>
@@ -16,7 +16,7 @@
     <!-- 2-header start -->
     <header class="main-header">
         <!-- header logo -->
-        <a href="${request.contextPath}/" class="logo">
+        <a href="./" class="logo">
             <span class="logo-mini"><b>XXL</b></span>
             <span class="logo-lg"><b>${I18n.admin_name}</b></span>
         </a>
@@ -127,7 +127,7 @@
                 <div class="page-tabs-content">
                     <#-- mainPage -->
                     <#if mainMenu?exists >
-                        <a href="javascript:;" class="active J_menuTab noactive" data-id="${request.contextPath}${mainMenu.url}">${mainMenu.name}</a>
+                        <a href="javascript:;" class="active J_menuTab noactive" data-id=".${mainMenu.url}">${mainMenu.name}</a>
                     </#if>
                 </div>
             </nav>
@@ -151,7 +151,7 @@
         <!-- Iframe Content -->
         <div class="J_mainContent" id="content-main" >
             <!-- Iframe -->
-            <iframe class="J_iframe" width="100%" height="100%" src="${request.contextPath}${mainMenu.url}" frameborder="0" data-id="${request.contextPath}${mainMenu.url}" seamless></iframe>
+            <iframe class="J_iframe" width="100%" height="100%" src=".${mainMenu.url}" frameborder="0" data-id=".${mainMenu.url}" seamless></iframe>
         </div>
 
     </div>
@@ -174,8 +174,8 @@
 
 <!-- 6-script start -->
 <@netCommon.commonScript />
-<script src="${request.contextPath}/static/biz/common/admin.tab.js?v=${I18n.admin_version}"></script>
-<script src="${request.contextPath}/static/biz/common/admin.setting.js?v=${I18n.admin_version}"></script>
+<script src="./static/biz/common/admin.tab.js?v=${I18n.admin_version}"></script>
+<script src="./static/biz/common/admin.setting.js?v=${I18n.admin_version}"></script>
 <script>
     $(function () {
         // init admin tab
