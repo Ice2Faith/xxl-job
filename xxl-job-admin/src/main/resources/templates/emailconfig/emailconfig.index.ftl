@@ -52,8 +52,8 @@
 <script>
 
 </script>
-<script src="${request.contextPath}/static/plugins/com/antherd/sm-crypto-0.3.2/sm3.js"></script>
-<script src="${request.contextPath}/static/plugins/com/antherd/sm-crypto-0.3.2/sm2.js"></script>
-<script src="${request.contextPath}/static/plugins/com/antherd/sm-crypto-0.3.2/sm4.js"></script>
-<script src="${request.contextPath}/static/js/emailconfig.index.1.js"></script>
+<script src="./static/plugins/com/antherd/sm-crypto-0.3.2/sm3.js"></script>
+<script src="./static/plugins/com/antherd/sm-crypto-0.3.2/sm2.js"></script>
+<script src="./static/plugins/com/antherd/sm-crypto-0.3.2/sm4.js"></script>
+<script src="./static/js/emailconfig.index.1.js"></script>
 </html>

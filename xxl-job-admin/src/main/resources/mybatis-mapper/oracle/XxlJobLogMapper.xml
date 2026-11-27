@@ -224,7 +224,7 @@
                 </trim>
                 ORDER BY t."TRIGGER_TIME" desc
                 ) p
-                where p.ROWNUM &lt;= #{clearBeforeNum,jdbcType=NUMERIC}
+                where ROWNUM &lt;= #{clearBeforeNum,jdbcType=NUMERIC}
                 ) t1
                 )
             </if>
