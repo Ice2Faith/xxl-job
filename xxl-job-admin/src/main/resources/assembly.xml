@@ -25,6 +25,7 @@
             <includes>
                 <include>*.sh</include>
                 <include>*.j2</include>
+                <include>*.bat</include>
             </includes>
             <fileMode>0744</fileMode>
             <lineEnding>unix</lineEnding>
@@ -37,6 +38,7 @@
             <includes>
                 <include>*.sh</include>
                 <include>*.j2</include>
+                <include>*.bat</include>
             </includes>
             <fileMode>0744</fileMode>
             <lineEnding>unix</lineEnding>

@@ -1,7 +1,6 @@
 package com.xxl.job.admin;
 
-import com.xxl.job.admin.platform.slf4j.WarBootApplication;
-import org.springframework.boot.SpringApplication;
+import com.xxl.job.admin.platform.app.WarBootApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
@@ -11,7 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class XxlJobAdminApplication extends WarBootApplication {
 
 	public static void main(String[] args) {
-        startup(XxlJobAdminApplication.class, args);
+		startup(XxlJobAdminApplication.class, args);
 	}
 
 }

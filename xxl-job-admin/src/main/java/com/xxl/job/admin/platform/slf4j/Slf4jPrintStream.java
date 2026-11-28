@@ -16,6 +16,11 @@ import java.util.Locale;
  * @desc 控制台输出，重定向到SLF4J，以便在logback中能够显示控制台输出
  */
 public class Slf4jPrintStream extends PrintStream {
+
+    public static interface LoggerProxyConsumer {
+        void accept(Logger logger, Slf4jLevel level, Object... content);
+    }
+
     public enum Slf4jLevel {
         TRACE, DEBUG, INFO, WARN, ERROR;
     }
@@ -39,8 +44,8 @@ public class Slf4jPrintStream extends PrintStream {
     // 但是一般不影响，除非，项目中大量使用System.out进行日志打印
     // 但是，如果项目中已经使用了大量的System.out都能够正常运行，那么替换之后的性能代价也可以忽略
     protected boolean useTrace = true;
-
     protected boolean logbackEnv = false;
+    public static final ThreadLocal<LoggerProxyConsumer> THREAD_CONSUMER = new ThreadLocal<>();
 
     public Slf4jPrintStream(Slf4jLevel level, PrintStream target, String targetName, boolean keepConsole, boolean useTrace) {
         super((OutputStream) new ByteArrayOutputStream());
@@ -59,17 +64,6 @@ public class Slf4jPrintStream extends PrintStream {
         }
         if (logback != null && !"".equals(logback)) {
             logbackEnv = true;
-        }
-    }
-
-    @Override
-    public void write(byte[] b) throws IOException {
-        // 如果没有启用logback，需要降拦截的日志重新输出回控制台显示
-        // 如果启用了控制台，则直接定向到logback日志中，不再进行回显到控制台
-        if (!logbackEnv) {
-            if (target != null) {
-                target.write(b);
-            }
         }
     }
 
@@ -126,6 +120,31 @@ public class Slf4jPrintStream extends PrintStream {
         return val;
     }
 
+    public static Object serializeVals(Object... vals) {
+        String line = null;
+        if (vals.length == 1) {
+            line = String.valueOf(stringify(vals[0]));
+        } else {
+            StringBuilder builder = new StringBuilder();
+            for (Object item : vals) {
+                builder.append(stringify(item));
+            }
+            line = builder.toString();
+        }
+        return line;
+    }
+
+    @Override
+    public void write(byte[] b) throws IOException {
+        // 如果没有启用logback，需要降拦截的日志重新输出回控制台显示
+        // 如果启用了控制台，则直接定向到logback日志中，不再进行回显到控制台
+        if (!logbackEnv) {
+            if (target != null) {
+                target.write(b);
+            }
+        }
+    }
+
     protected void proxy(Object... vals) {
         if (vals.length <= 0) {
             return;
@@ -160,21 +179,12 @@ public class Slf4jPrintStream extends PrintStream {
         } else if (level == Slf4jLevel.ERROR) {
             logger.error(Slf4jPrintStream::serializeVals, vals);
         }
+        LoggerProxyConsumer consumer = THREAD_CONSUMER.get();
+        if (consumer != null) {
+            consumer.accept(log, level, vals);
+        }
     }
 
-    public static Object serializeVals(Object... vals) {
-        String line = null;
-        if (vals.length == 1) {
-            line = String.valueOf(stringify(vals[0]));
-        } else {
-            StringBuilder builder = new StringBuilder();
-            for (Object item : vals) {
-                builder.append(stringify(item));
-            }
-            line = builder.toString();
-        }
-        return line;
-    }
 
     @Override
     public void flush() {
@@ -227,7 +237,6 @@ public class Slf4jPrintStream extends PrintStream {
             target.write(buf, off, len);
         }
     }
-
 
     @Override
     public void print(boolean b) {
@@ -384,49 +393,53 @@ public class Slf4jPrintStream extends PrintStream {
     @Override
     public PrintStream printf(String format, Object... args) {
         StringBuilder builder = new StringBuilder();
-        Formatter formatter = new Formatter((Appendable) builder);
-        formatter.format(Locale.getDefault(), format, args);
-        proxy(builder.toString());
-        if (target != null && keepConsole) {
-            target.printf(format, args);
+        try (Formatter formatter = new Formatter((Appendable) builder)) {
+            formatter.format(Locale.getDefault(), format, args);
+            proxy(builder.toString());
+            if (target != null && keepConsole) {
+                target.printf(format, args);
+            }
+            return this;
         }
-        return this;
     }
 
     @Override
     public PrintStream printf(Locale l, String format, Object... args) {
         StringBuilder builder = new StringBuilder();
-        Formatter formatter = new Formatter((Appendable) builder);
-        formatter.format(l, format, args);
-        proxy(builder.toString());
-        if (target != null && keepConsole) {
-            target.printf(l, format, args);
+        try (Formatter formatter = new Formatter((Appendable) builder)) {
+            formatter.format(l, format, args);
+            proxy(builder.toString());
+            if (target != null && keepConsole) {
+                target.printf(l, format, args);
+            }
+            return this;
         }
-        return this;
     }
 
     @Override
     public PrintStream format(String format, Object... args) {
         StringBuilder builder = new StringBuilder();
-        Formatter formatter = new Formatter((Appendable) builder);
-        formatter.format(Locale.getDefault(), format, args);
-        proxy(builder.toString());
-        if (target != null && keepConsole) {
-            target.format(format, args);
+        try (Formatter formatter = new Formatter((Appendable) builder)) {
+            formatter.format(Locale.getDefault(), format, args);
+            proxy(builder.toString());
+            if (target != null && keepConsole) {
+                target.format(format, args);
+            }
+            return this;
         }
-        return this;
     }
 
     @Override
     public PrintStream format(Locale l, String format, Object... args) {
         StringBuilder builder = new StringBuilder();
-        Formatter formatter = new Formatter((Appendable) builder);
-        formatter.format(l, format, args);
-        proxy(builder.toString());
-        if (target != null && keepConsole) {
-            target.format(l, format, args);
+        try (Formatter formatter = new Formatter((Appendable) builder)) {
+            formatter.format(l, format, args);
+            proxy(builder.toString());
+            if (target != null && keepConsole) {
+                target.format(l, format, args);
+            }
+            return this;
         }
-        return this;
     }
 
     @Override

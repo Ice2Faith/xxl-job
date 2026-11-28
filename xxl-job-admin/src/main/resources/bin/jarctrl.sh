@@ -30,6 +30,9 @@ BOOL_FALSE=0
 # ##################################################################################################################
 # 常用配置区
 # ##################################################################################################################
+# 是否前台启动，如果前台启动将会占用终端，适用于容器中运行时启用
+# 必须是定义的BOOL常量
+ENABLE_FRONTEND_STARTUP=$BOOL_FALSE
 
 # Springboot 配置常见配置区
 # 是否开启Springboot配置
@@ -47,6 +50,12 @@ SPRING_APPLICATION_NAME=
 # 应用的根日志级别重定义
 # 有值/非空则使用
 SPRING_LOGGING_LEVEL_ROOT=info
+# 应用配置文件路径，可用于加载外部的配置文件
+# 有值/非空则使用
+SPRING_CONFIG_LOCATION=
+# 应用配置文件路径，可用于加载额外的配置文件
+# 有值/非空则使用
+SPRING_CONFIG_ADDITIONAL_LOCATION=
 
 # logback 配置区
 # 是否开启Logback配置
@@ -73,6 +82,8 @@ APP_JAVA_HOME=
 # JVM 常见配置区
 # JVM 启动参数定义，此参数不受 ENABLE_JVM_CFG 控制
 JVM_OPTS=
+# 是否强制使用UTF-8输出
+ENABLE_UTF8_ENCODING=$BOOL_FALSE
 # 是否开启Jvm配置
 # 必须是定义的BOOL常量
 ENABLE_JVM_CFG=$BOOL_FALSE
@@ -354,6 +365,12 @@ BACKUP_DIR=
 # 回滚路径
 ROLLBACK_DIR=
 
+# 获取java的主版本号
+function getJavaMajorVersion(){
+  _p_ver=`$JAVA_PATH -version 2>&1 | head -n 1 | sed -nE 's/.*"1\.([0-9]+).*/\1/p; s/.*"([0-9]+).*/\1/p'`
+  _func_ret=$_p_ver
+}
+
 # 准备Spring的启动参数
 function prepareSpringCfg(){
     if [[ -n "${SPRING_APPLICATION_NAME}" ]]; then
@@ -367,6 +384,12 @@ function prepareSpringCfg(){
     fi
     if [[ -n "${SPRING_LOGGING_LEVEL_ROOT}" ]]; then
       JVM_OPTS="${JVM_OPTS} -Dlogging.level.root=${SPRING_LOGGING_LEVEL_ROOT}"
+    fi
+    if [[ -n "${SPRING_CONFIG_LOCATION}" ]]; then
+      JVM_OPTS="${JVM_OPTS} -Dspring.config.location=${SPRING_CONFIG_LOCATION}"
+    fi
+    if [[ -n "${SPRING_CONFIG_ADDITIONAL_LOCATION}" ]]; then
+      JVM_OPTS="${JVM_OPTS} -Dspring.config.additional-location=${SPRING_CONFIG_ADDITIONAL_LOCATION}"
     fi
 }
 # 准备logback的启动参数
@@ -485,6 +508,31 @@ function prepareSkywalkingCfg(){
   JVM_OPTS="${JVM_OPTS} ${_p_skywalking_args}"
 }
 
+# 不同java版本的差异化配置
+function prepareJavaVersionCfg(){
+  mkdir -p lib-unload
+
+  cleanFuncParams
+  _func_ret=
+  getJavaMajorVersion
+  _java_major=$_func_ret
+  if [ -n "$_java_major" ] && [ "$_java_major" -ge 9 ]; then
+    echo "java9+(${_java_major}) enable modules reflect opts ..."
+    JVM_OPTS="${JVM_OPTS} --add-opens java.base/java.lang.invoke=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED"
+
+    echo "java9+ add nashorn engine ..."
+    mv -f lib-unload/nashorn*.jar lib
+  else
+    echo "java8- remove nashorn engine ..."
+    mv -f lib/nashorn*.jar lib-unload
+  fi
+}
+
+# 配置输出编码配置，主要用于控制台输出
+function prepareUtf8EncodingCfg(){
+  JVM_OPTS="${JVM_OPTS} -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8"
+}
+
 # 准备JVM的所有启动参数
 function prepareJvmOpts() {
     JVM_OPTS="${JVM_OPTS} -Djar.name=$JarName"
@@ -501,6 +549,10 @@ function prepareJvmOpts() {
       prepareJvmCfg
     fi
 
+    if [ $ENABLE_UTF8_ENCODING == $BOOL_TRUE ];then
+      prepareUtf8EncodingCfg
+    fi
+
     if [ $ENABLE_JMX_CFG == $BOOL_TRUE ];then
        prepareJmxCfg
     fi
@@ -512,6 +564,8 @@ function prepareJvmOpts() {
     if [ $ENABLE_XREBEL == $BOOL_TRUE ];then
       prepareXrebelCfg
     fi
+
+    prepareJavaVersionCfg
 }
 
 # 启动jar
@@ -550,10 +604,18 @@ function start() {
   mkdir -p ${LOG_DIR}
 
   if [ $ENABLE_LOGBACK_CFG == $BOOL_TRUE ];then
-    nohup $JAVA_PATH -jar  $JVM_OPTS $JarName > /dev/null 2>&1 & echo $! > $PID_FILE
+    if [ $ENABLE_FRONTEND_STARTUP == $BOOL_TRUE ];then
+      $JAVA_PATH $JVM_OPTS -jar $JarName > /dev/null 2>&1 echo $! > $PID_FILE
+    else
+      nohup $JAVA_PATH $JVM_OPTS  -jar $JarName > /dev/null 2>&1 & echo $! > $PID_FILE
+    fi
     echo -e "\033[0;34m logback \033[0m start ..."
   else
-    nohup $JAVA_PATH -jar  $JVM_OPTS $JarName > $LOG_FILE 2>&1 & echo $! > $PID_FILE
+    if [ $ENABLE_FRONTEND_STARTUP == $BOOL_TRUE ];then
+      $JAVA_PATH  $JVM_OPTS -jar $JarName > $LOG_FILE 2>&1 echo $! > $PID_FILE
+    else
+      nohup $JAVA_PATH  $JVM_OPTS -jar $JarName > $LOG_FILE 2>&1 & echo $! > $PID_FILE
+    fi
     echo -e "\033[0;34m sysout \033[0m start ..."
   fi
 
@@ -619,10 +681,21 @@ function status() {
 function findLogFile() {
       _func_ret=
 
-      _p_log_file=`ls -t ${LOG_DIR} | grep .log | grep -v grep | grep ${AppName} | head -n 1`
+      # this rule only support 1 level dir find
+      # _p_log_file=`ls -t ${LOG_DIR} | grep .log | grep -v grep | grep ${AppName} | head -n 1`
+      # this rule support multi level dir find
+      _p_log_file=`find ${LOG_DIR} -type f -name 'text*.log' -exec ls -t {} + | grep -v grep | grep ${AppName} | head -n 1`
       if [[ "${_p_log_file}" = "" ]]; then
         echo -e "\033[0;31m not found ${AppName}*.log , try find most newest log file... \033[0m"
-        _p_log_file=`ls -t ${LOG_DIR} | grep .log | grep -v grep | head -n 1`
+        _p_log_file=`find ${LOG_DIR} -type f -name 'text*.log' -exec ls -t {} + | grep -v grep | head -n 1`
+      fi
+      if [[ "${_p_log_file}" = "" ]]; then
+        echo -e "\033[0;31m not found ${AppName}*.log , try find most newest log file... \033[0m"
+        _p_log_file=`find ${LOG_DIR} -type f -name '*.log' -exec ls -t {} + | grep -v grep | grep ${AppName} | head -n 1`
+      fi
+      if [[ "${_p_log_file}" = "" ]]; then
+        echo -e "\033[0;31m not found ${AppName}*.log , try find most newest log file... \033[0m"
+        _p_log_file=`find ${LOG_DIR} -type f -name '*.log' -exec ls -t {} + | grep -v grep | head -n 1`
       fi
 
       _func_ret=$_p_log_file
@@ -635,8 +708,8 @@ function log() {
     _p_log_file=$_func_ret
 
     if [[ -n "$_p_log_file" ]]; then
-        echo -e "\033[0;34m found log file ${LOG_DIR}/$_p_log_file \033[0m"
-        tail -f -n $TAIL_LOG_LINES ${LOG_DIR}/$_p_log_file
+        echo -e "\033[0;34m found log file $_p_log_file \033[0m"
+        tail -f -n $TAIL_LOG_LINES $_p_log_file
     else
       echo -e "\033[0;31m not found log file like ${AppName}*.log. \033[0m"
     fi
@@ -649,8 +722,8 @@ function except() {
     _p_log_file=$_func_ret
 
     if [[ -n "$_p_log_file" ]]; then
-        echo -e "\033[0;34m found log file ${LOG_DIR}/$_p_log_file \033[0m"
-        tail -f -n $TAIL_EXCEPT_LINES ${LOG_DIR}/$_p_log_file | grep -in -B $TAIL_EXCEPT_BEFORE_LINES -A $TAIL_EXCEPT_AFTER_LINES exception
+        echo -e "\033[0;34m found log file $_p_log_file \033[0m"
+        tail -f -n $TAIL_EXCEPT_LINES $_p_log_file | grep -in -B $TAIL_EXCEPT_BEFORE_LINES -A $TAIL_EXCEPT_AFTER_LINES exception
     else
       echo -e "\033[0;31m not found log file like ${AppName}*.log. \033[0m"
     fi
@@ -687,7 +760,7 @@ function rollback() {
 # 准备运行Jar包的上下文
 function prepareAppContext(){
       # 如果指定了APP_JAVA_HOME,则使用APP_JAVA_HOME下面的JAVA
-      if [[ "$APP_JAVA_HOME" -ne "" ]]; then
+      if [[ -n "$APP_JAVA_HOME" ]]; then
         JAVA_PATH=${APP_JAVA_HOME}/bin/java
       fi
 
@@ -750,7 +823,7 @@ function prepareAppContext(){
       _p_log_file=$_func_ret
 
       if [[ -n "$_p_log_file" ]]; then
-        LOG_FILE=${LOG_DIR}/$_p_log_file
+        LOG_FILE=$_p_log_file
       fi
 }
 

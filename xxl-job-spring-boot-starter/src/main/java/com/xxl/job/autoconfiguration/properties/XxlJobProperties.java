@@ -37,5 +37,9 @@ public class XxlJobProperties {
         private String logPath;
 
         private int logRetentionDays;
+
+        private Boolean enabled=true;
+        private String excludedPackage;
+        private Boolean glueEnabled=true;
     }
 }

@@ -12,6 +12,11 @@ public class Const {
      */
     public static final String XXL_JOB_ACCESS_TOKEN = "XXL-JOB-ACCESS-TOKEN";
 
+    /**
+     * app name
+     */
+    public static final String XXL_JOB_APPNAME = "XXL-JOB-APPNAME";
+
 
     // ---------------------- for registry ----------------------
 
@@ -24,5 +29,13 @@ public class Const {
      * registry dead timeout, default 90s
      */
     public static final int DEAD_TIMEOUT = BEAT_TIMEOUT * 3;
+
+
+    // ---------------------- for executor ----------------------
+
+    /*
+     * elegant shutdown wait seconds
+     */
+    public static final long ELEGANT_SHUTDOWN_WAITING_SECONDS = 5;
 
 }

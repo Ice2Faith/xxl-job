@@ -7,7 +7,7 @@ CREATE TABLE "XXL_JOB_INFO"
 (
     "ID" BIGINT IDENTITY(100,1) NOT NULL,
     "JOB_GROUP" BIGINT NOT NULL,
-    "JOB_DESC" VARCHAR (512) NOT NULL,
+    "NAME" VARCHAR (512) NOT NULL,
     "ADD_TIME"        DATETIME,
     "UPDATE_TIME"     DATETIME,
     "AUTHOR" VARCHAR (125),
@@ -17,7 +17,7 @@ CREATE TABLE "XXL_JOB_INFO"
     "MISFIRE_STRATEGY" VARCHAR (100) DEFAULT 'DO_NOTHING' NOT NULL,
     "EXECUTOR_ROUTE_STRATEGY" VARCHAR (100),
     "EXECUTOR_HANDLER" VARCHAR (512),
-    "EXECUTOR_PARAM" VARCHAR (1024),
+    "EXECUTOR_PARAM" text,
     "EXECUTOR_BLOCK_STRATEGY" VARCHAR (100),
     "EXECUTOR_TIMEOUT" INT DEFAULT 0 NOT NULL,
     "EXECUTOR_FAIL_RETRY_COUNT" INT DEFAULT 0 NOT NULL,
@@ -44,6 +44,13 @@ EXEC sys.sp_addextendedproperty
     @level1type = N'Table',  @level1name = 'XXL_JOB_INFO',
     @level2type = N'Column',  @level2name = 'JOB_GROUP',
     @name = N'MS_Description', @value = N'执行器主键ID'
+    ;
+
+EXEC sys.sp_addextendedproperty
+    @level0type = N'Schema',  @level0name = N'dbo',
+    @level1type = N'Table',  @level1name = 'XXL_JOB_INFO',
+    @level2type = N'Column',  @level2name = 'NAME',
+    @name = N'MS_Description', @value = N'执行器名称'
     ;
 
 EXEC sys.sp_addextendedproperty
@@ -86,13 +93,13 @@ EXEC sys.sp_addextendedproperty
     @level0type = N'Schema',  @level0name = N'dbo',
     @level1type = N'Table',  @level1name = 'XXL_JOB_INFO',
     @level2type = N'Column',  @level2name = 'EXECUTOR_HANDLER',
-    @name = N'MS_Description', @value = N'执行器任务HANDLER'
+    @name = N'MS_Description', @value = N'任务HANDLER'
     ;
 EXEC sys.sp_addextendedproperty
     @level0type = N'Schema',  @level0name = N'dbo',
     @level1type = N'Table',  @level1name = 'XXL_JOB_INFO',
     @level2type = N'Column',  @level2name = 'EXECUTOR_PARAM',
-    @name = N'MS_Description', @value = N'执行器任务参数'
+    @name = N'MS_Description', @value = N'任务参数'
     ;
 EXEC sys.sp_addextendedproperty
     @level0type = N'Schema',  @level0name = N'dbo',
@@ -169,7 +176,7 @@ CREATE TABLE "XXL_JOB_LOG"
     "JOB_ID" BIGINT NOT NULL,
     "EXECUTOR_ADDRESS" VARCHAR (512),
     "EXECUTOR_HANDLER" VARCHAR (512),
-    "EXECUTOR_PARAM" VARCHAR (1024),
+    "EXECUTOR_PARAM" TEXT,
     "EXECUTOR_SHARDING_PARAM" VARCHAR (40),
     "EXECUTOR_FAIL_RETRY_COUNT" INT DEFAULT 0 NOT NULL,
     "TRIGGER_TIME" DATETIME,
@@ -188,10 +195,16 @@ CREATE INDEX "IDX_XXL_JOB_LOG_TRIGGER_TIME" ON "XXL_JOB_LOG" ("TRIGGER_TIME")
 CREATE INDEX "IDX_XXL_JOB_LOG_HANDLE_CODE" ON "XXL_JOB_LOG" ("HANDLE_CODE")
 ;
 
+CREATE INDEX "IDX_XXL_JOB_LOG_JOB_GROUP" ON "XXL_JOB_LOG" ("JOB_GROUP")
+;
+
 CREATE INDEX "IDX_XXL_JOB_LOG_JOBID_JOBGROUP" ON "XXL_JOB_LOG" ("JOB_ID","JOB_GROUP")
 ;
 
 CREATE INDEX "IDX_XXL_JOB_LOG_JOB_ID" ON "XXL_JOB_LOG" ("JOB_ID" desc,"ID" desc)
+;
+
+CREATE INDEX "IDX_XXL_JOB_LOG_ALARM_STATUS" ON "XXL_JOB_LOG" ("ALARM_STATUS")
 ;
 
 EXEC sys.sp_addextendedproperty
@@ -216,19 +229,19 @@ EXEC sys.sp_addextendedproperty
     @level0type = N'Schema',  @level0name = N'dbo',
     @level1type = N'Table',  @level1name = 'XXL_JOB_LOG',
     @level2type = N'Column',  @level2name = 'EXECUTOR_HANDLER',
-    @name = N'MS_Description', @value = N'执行器任务HANDLER'
+    @name = N'MS_Description', @value = N'任务HANDLER'
     ;
 EXEC sys.sp_addextendedproperty
     @level0type = N'Schema',  @level0name = N'dbo',
     @level1type = N'Table',  @level1name = 'XXL_JOB_LOG',
     @level2type = N'Column',  @level2name = 'EXECUTOR_PARAM',
-    @name = N'MS_Description', @value = N'执行器任务参数'
+    @name = N'MS_Description', @value = N'任务参数'
     ;
 EXEC sys.sp_addextendedproperty
     @level0type = N'Schema',  @level0name = N'dbo',
     @level1type = N'Table',  @level1name = 'XXL_JOB_LOG',
     @level2type = N'Column',  @level2name = 'EXECUTOR_SHARDING_PARAM',
-    @name = N'MS_Description', @value = N'执行器任务分片参数，格式如 1/2'
+    @name = N'MS_Description', @value = N'任务分片参数，格式如 1/2'
     ;
 EXEC sys.sp_addextendedproperty
     @level0type = N'Schema',  @level0name = N'dbo',
@@ -276,7 +289,7 @@ EXEC sys.sp_addextendedproperty
     @level0type = N'Schema',  @level0name = N'dbo',
     @level1type = N'Table',  @level1name = 'XXL_JOB_LOG',
     @level2type = N'Column',  @level2name = 'ALARM_STATUS',
-    @name = N'MS_Description', @value = N'告警状态：0-默认、1-无需告警、2-告警成功、3-告警失败'
+    @name = N'MS_Description', @value = N'告警状态：0-默认、-1=锁定状态、1-无需告警、2-告警成功、3-告警失败'
     ;
 
 
@@ -377,13 +390,16 @@ CREATE TABLE "XXL_JOB_GROUP"
 (
     "ID" BIGINT IDENTITY(100,1) NOT NULL,
     "APP_NAME" VARCHAR (128) NOT NULL,
-    "TITLE" VARCHAR (128) NOT NULL,
+    "NAME" VARCHAR (128) NOT NULL,
     "ADDRESS_TYPE" INT DEFAULT 0 NOT NULL,
     "ADDRESS_LIST" VARCHAR (4000),
+    "ACCESS_TOKEN" VARCHAR (500),
     "UPDATE_TIME" DATETIME,
     PRIMARY KEY ("ID")
 );
 
+CREATE UNIQUE INDEX "IDX_XXL_JOB_GROUP_APP_NAME" ON "XXL_JOB_GROUP" ("APP_NAME")
+;
 
 EXEC sys.sp_addextendedproperty
     @level0type = N'Schema',  @level0name = N'dbo',
@@ -394,7 +410,7 @@ EXEC sys.sp_addextendedproperty
 EXEC sys.sp_addextendedproperty
     @level0type = N'Schema',  @level0name = N'dbo',
     @level1type = N'Table',  @level1name = 'XXL_JOB_GROUP',
-    @level2type = N'Column',  @level2name = 'TITLE',
+    @level2type = N'Column',  @level2name = 'NAME',
     @name = N'MS_Description', @value = N'执行器名称'
     ;
 EXEC sys.sp_addextendedproperty
@@ -473,62 +489,48 @@ EXEC sys.sp_addextendedproperty
     @name = N'MS_Description', @value = N'锁名称'
     ;
 
+
+
+-- ================== for default data ==================
+
 set identity_insert XXL_JOB_GROUP on;
 
-INSERT INTO "XXL_JOB_GROUP"("ID", "APP_NAME", "TITLE", "ADDRESS_TYPE", "ADDRESS_LIST", "UPDATE_TIME")
-VALUES (1, 'xxl-job-executor-sample', '通用执行器Sample', 0, NULL, SYSDATETIME());
+INSERT INTO "XXL_JOB_GROUP"("ID", "APP_NAME", "NAME", "ADDRESS_TYPE", "ADDRESS_LIST", "ACCESS_TOKEN", "UPDATE_TIME")
+VALUES (1, 'xxl-job-executor-sample', '通用执行器Sample', 0,  NULL, 'default_token', SYSDATETIME());
 
-INSERT INTO "XXL_JOB_GROUP"("ID", "APP_NAME", "TITLE", "ADDRESS_TYPE", "ADDRESS_LIST", "UPDATE_TIME")
-VALUES   (2, 'xxl-job-executor-sample-ai', 'AI执行器Sample', 0, NULL, SYSDATETIME());
+INSERT INTO "XXL_JOB_GROUP"("ID", "APP_NAME", "NAME", "ADDRESS_TYPE", "ADDRESS_LIST", "ACCESS_TOKEN", "UPDATE_TIME")
+VALUES (2, 'xxl-job-executor-sample-ai', 'AI执行器Sample', 0, NULL, 'default_token', SYSDATETIME());
 
 set identity_insert XXL_JOB_GROUP off;
 
 set identity_insert XXL_JOB_INFO on;
 
-INSERT INTO "XXL_JOB_INFO"("ID", "JOB_GROUP", "JOB_DESC",
-                           "ADD_TIME", "UPDATE_TIME",
-                           "AUTHOR", "ALARM_EMAIL",
-                           "SCHEDULE_TYPE", "SCHEDULE_CONF",
-                           "MISFIRE_STRATEGY", "EXECUTOR_ROUTE_STRATEGY",
-                           "EXECUTOR_HANDLER", "EXECUTOR_PARAM",
-                           "EXECUTOR_BLOCK_STRATEGY",
-                           "EXECUTOR_TIMEOUT", "EXECUTOR_FAIL_RETRY_COUNT",
-                           "GLUE_TYPE", "GLUE_SOURCE", "GLUE_REMARK",
-                           "GLUE_UPDATETIME",
+INSERT INTO "XXL_JOB_INFO"("ID", "JOB_GROUP", "NAME", "ADD_TIME", "UPDATE_TIME", "AUTHOR", "ALARM_EMAIL",
+                           "SCHEDULE_TYPE", "SCHEDULE_CONF", "MISFIRE_STRATEGY", "EXECUTOR_ROUTE_STRATEGY",
+                           "EXECUTOR_HANDLER", "EXECUTOR_PARAM", "EXECUTOR_BLOCK_STRATEGY", "EXECUTOR_TIMEOUT",
+                           "EXECUTOR_FAIL_RETRY_COUNT", "GLUE_TYPE", "GLUE_SOURCE", "GLUE_REMARK", "GLUE_UPDATETIME",
                            "CHILD_JOBID")
 VALUES (1, 1, '示例任务01', SYSDATETIME(), SYSDATETIME(), 'XXL', '', 'CRON', '0 0 0 * * ? *',
         'DO_NOTHING', 'FIRST', 'demoJobHandler', '', 'SERIAL_EXECUTION', 0, 0, 'BEAN', '', 'GLUE代码初始化',
         SYSDATETIME(), '');
 
-INSERT INTO "XXL_JOB_INFO"("ID", "JOB_GROUP", "JOB_DESC",
-                           "ADD_TIME", "UPDATE_TIME",
-                           "AUTHOR", "ALARM_EMAIL",
-                           "SCHEDULE_TYPE", "SCHEDULE_CONF",
-                           "MISFIRE_STRATEGY", "EXECUTOR_ROUTE_STRATEGY",
-                           "EXECUTOR_HANDLER", "EXECUTOR_PARAM",
-                           "EXECUTOR_BLOCK_STRATEGY",
-                           "EXECUTOR_TIMEOUT", "EXECUTOR_FAIL_RETRY_COUNT",
-                           "GLUE_TYPE", "GLUE_SOURCE", "GLUE_REMARK",
-                           "GLUE_UPDATETIME",
+INSERT INTO "XXL_JOB_INFO"("ID", "JOB_GROUP", "NAME", "ADD_TIME", "UPDATE_TIME", "AUTHOR", "ALARM_EMAIL",
+                           "SCHEDULE_TYPE", "SCHEDULE_CONF", "MISFIRE_STRATEGY", "EXECUTOR_ROUTE_STRATEGY",
+                           "EXECUTOR_HANDLER", "EXECUTOR_PARAM", "EXECUTOR_BLOCK_STRATEGY", "EXECUTOR_TIMEOUT",
+                           "EXECUTOR_FAIL_RETRY_COUNT", "GLUE_TYPE", "GLUE_SOURCE", "GLUE_REMARK", "GLUE_UPDATETIME",
                            "CHILD_JOBID")
-VALUES (2, 2, 'Ollama示例任务01', SYSDATETIME(), SYSDATETIME(), 'XXL', '', 'NONE', '',
+VALUES (2, 2, 'Ollama示例任务', SYSDATETIME(), SYSDATETIME(), 'XXL', '', 'NONE', '',
         'DO_NOTHING', 'FIRST', 'ollamaJobHandler', '{
-    "input": "慢SQL问题分析思路",
+    "input": "Java实现二叉树层序遍历",
     "prompt": "你是一个研发工程师，擅长解决技术类问题。",
-    "model": "qwen3:0.6b"
+    "model": "qwen3.5:0.8b"
 }', 'SERIAL_EXECUTION', 0, 0, 'BEAN', '', 'GLUE代码初始化',
         SYSDATETIME(), '');
 
-INSERT INTO "XXL_JOB_INFO"("ID", "JOB_GROUP", "JOB_DESC",
-                           "ADD_TIME", "UPDATE_TIME",
-                           "AUTHOR", "ALARM_EMAIL",
-                           "SCHEDULE_TYPE", "SCHEDULE_CONF",
-                           "MISFIRE_STRATEGY", "EXECUTOR_ROUTE_STRATEGY",
-                           "EXECUTOR_HANDLER", "EXECUTOR_PARAM",
-                           "EXECUTOR_BLOCK_STRATEGY",
-                           "EXECUTOR_TIMEOUT", "EXECUTOR_FAIL_RETRY_COUNT",
-                           "GLUE_TYPE", "GLUE_SOURCE", "GLUE_REMARK",
-                           "GLUE_UPDATETIME",
+INSERT INTO "XXL_JOB_INFO"("ID", "JOB_GROUP", "NAME", "ADD_TIME", "UPDATE_TIME", "AUTHOR", "ALARM_EMAIL",
+                           "SCHEDULE_TYPE", "SCHEDULE_CONF", "MISFIRE_STRATEGY", "EXECUTOR_ROUTE_STRATEGY",
+                           "EXECUTOR_HANDLER", "EXECUTOR_PARAM", "EXECUTOR_BLOCK_STRATEGY", "EXECUTOR_TIMEOUT",
+                           "EXECUTOR_FAIL_RETRY_COUNT", "GLUE_TYPE", "GLUE_SOURCE", "GLUE_REMARK", "GLUE_UPDATETIME",
                            "CHILD_JOBID")
 VALUES (3, 2, 'Dify示例任务', SYSDATETIME(), SYSDATETIME(), 'XXL', '', 'NONE', '',
         'DO_NOTHING', 'FIRST', 'difyWorkflowJobHandler', '{
@@ -538,6 +540,18 @@ VALUES (3, 2, 'Dify示例任务', SYSDATETIME(), SYSDATETIME(), 'XXL', '', 'NONE
     "user": "xxl-job",
     "baseUrl": "http://localhost/v1",
     "apiKey": "app-OUVgNUOQRIMokfmuJvBJoUTN"
+}', 'SERIAL_EXECUTION', 0, 0, 'BEAN', '', 'GLUE代码初始化',
+        SYSDATETIME(), '');
+
+INSERT INTO "XXL_JOB_INFO"("ID", "JOB_GROUP", "NAME", "ADD_TIME", "UPDATE_TIME", "AUTHOR", "ALARM_EMAIL",
+                           "SCHEDULE_TYPE", "SCHEDULE_CONF", "MISFIRE_STRATEGY", "EXECUTOR_ROUTE_STRATEGY",
+                           "EXECUTOR_HANDLER", "EXECUTOR_PARAM", "EXECUTOR_BLOCK_STRATEGY", "EXECUTOR_TIMEOUT",
+                           "EXECUTOR_FAIL_RETRY_COUNT", "GLUE_TYPE", "GLUE_SOURCE", "GLUE_REMARK", "GLUE_UPDATETIME",
+                           "CHILD_JOBID")
+VALUES (4, 2, 'OpenClaw示例任务', SYSDATETIME(), SYSDATETIME(), 'XXL', '', 'NONE', '',
+        'DO_NOTHING', 'FIRST', 'openClawJobHandler', '{
+    "input": "查看下上海今天得天气，给出出游建议",
+    "prompt": "你是一个出游助手，擅长做旅游规划"
 }', 'SERIAL_EXECUTION', 0, 0, 'BEAN', '', 'GLUE代码初始化',
         SYSDATETIME(), '');
 
@@ -552,4 +566,3 @@ set identity_insert XXL_JOB_USER off;
 
 INSERT INTO "XXL_JOB_LOCK" ("LOCK_NAME")
 VALUES ('schedule_lock');
-

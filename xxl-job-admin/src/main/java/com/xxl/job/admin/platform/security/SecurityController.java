@@ -3,12 +3,11 @@ package com.xxl.job.admin.platform.security;
 import com.antherd.smcrypto.sm2.Keypair;
 import com.antherd.smcrypto.sm2.Sm2;
 import com.antherd.smcrypto.sm3.Sm3;
-import com.xxl.job.admin.util.I18nUtil;
+import com.xxl.job.admin.framework.util.I18nUtil;
 import com.xxl.sso.core.annotation.XxlSso;
 import com.xxl.tool.response.Response;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 

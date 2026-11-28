@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xxl.job.admin.mapper.XxlJobLogMapper">
+<mapper namespace="com.xxl.job.admin.business.mapper.XxlJobLogMapper">
 
-	<resultMap id="XxlJobLog" type="com.xxl.job.admin.model.XxlJobLog" >
+	<resultMap id="XxlJobLog" type="com.xxl.job.admin.business.model.XxlJobLog" >
 		<result column="id" property="id" />
 
 		<result column="job_group" property="jobGroup" />
@@ -25,8 +25,8 @@
 
 		<result column="alarm_status" property="alarmStatus" />
 
-		<result column="job_desc" property="jobDesc" />
-		<result column="group_title" property="groupTitle" />
+		<result column="job_name" property="jobName" />
+		<result column="group_name" property="groupName" />
 	</resultMap>
 
 	<resultMap id="logReportMap" type="com.xxl.job.admin.platform.report.data.LogReportDto">
@@ -56,8 +56,8 @@
 	<sql id="Base_Column_List_Page">
 		<include refid="Base_Column_List"></include>
 		,
-		f.job_desc,
-		g.title as group_title
+		f.name as job_name,
+		g.name as group_name
 	</sql>
 
 	<sql id="sqlPageListBody">
@@ -65,7 +65,7 @@
 		left join xxl_job_info f on t.job_id=f.id
 		left join xxl_job_group g on t.job_group = g.id
 		<where>
-			<if test="jobId==0 and jobGroup gt 0">
+			<if test="jobGroup gt 0">
 				AND t.job_group = #{jobGroup}
 			</if>
 			<if test="jobId gt 0">
@@ -96,7 +96,7 @@
 	<select id="pageList" resultMap="XxlJobLog">
 		SELECT <include refid="Base_Column_List_Page" />
 		<include refid="sqlPageListBody"></include>
-		ORDER BY t.trigger_time DESC
+		ORDER BY t.id DESC
 		LIMIT #{page.size}
 		OFFSET #{page.offsetBegin}
 	</select>
@@ -113,7 +113,7 @@
 	</select>
 
 
-	<insert id="save" parameterType="com.xxl.job.admin.model.XxlJobLog" useGeneratedKeys="true" keyProperty="id" >
+	<insert id="save" parameterType="com.xxl.job.admin.business.model.XxlJobLog" useGeneratedKeys="true" keyProperty="id" >
 		INSERT INTO xxl_job_log (
 			job_group,
 			job_id,
@@ -152,6 +152,9 @@
 			handle_time= #{handleTime},
 			handle_code= #{handleCode},
 			handle_msg= #{handleMsg}
+			<if test="handleCode == 200">
+				,alarm_status= 1
+			</if>
 		WHERE id= #{id}
 	</update>
 
@@ -225,12 +228,9 @@
 
 	<select id="findFailJobLogIds" resultType="long" >
 		SELECT id FROM xxl_job_log
-		WHERE not (
-			(trigger_code in (0, 200) and handle_code = 0)
-			OR
-			(handle_code = 200)
-		)
-		AND alarm_status = 0
+		WHERE alarm_status = 0
+		  AND handle_code != 200
+			AND (handle_code != 0 OR trigger_code NOT IN (0, 200))
 		ORDER BY id ASC
 		LIMIT #{pagesize}
 	</select>

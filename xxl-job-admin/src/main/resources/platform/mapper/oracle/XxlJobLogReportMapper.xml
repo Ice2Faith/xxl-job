@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xxl.job.admin.mapper.XxlJobLogReportMapper">
+<mapper namespace="com.xxl.job.admin.business.mapper.XxlJobLogReportMapper">
 
-    <resultMap id="XxlJobLogReport" type="com.xxl.job.admin.model.XxlJobLogReport">
+    <resultMap id="XxlJobLogReport" type="com.xxl.job.admin.business.model.XxlJobLogReport" >
         <result column="ID" property="id"/>
         <result column="TRIGGER_DAY" property="triggerDay"/>
         <result column="RUNNING_COUNT" property="runningCount"/>
         <result column="SUC_COUNT" property="sucCount"/>
         <result column="FAIL_COUNT" property="failCount"/>
+        <result column="UPDATE_TIME" property="updateTime" />
     </resultMap>
 
     <sql id="Base_Column_List">
@@ -16,10 +17,11 @@
 		t."TRIGGER_DAY",
 		t."RUNNING_COUNT",
 		t."SUC_COUNT",
-		t."FAIL_COUNT"
+		t."FAIL_COUNT",
+		t."UPDATE_TIME"
     </sql>
 
-    <insert id="save" parameterType="com.xxl.job.admin.model.XxlJobLogReport" useGeneratedKeys="true"
+    <insert id="save" parameterType="com.xxl.job.admin.business.model.XxlJobLogReport" useGeneratedKeys="true"
             keyProperty="id">
         <selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Integer">
             select SEQ_XXL_JOB_LOG_REPORT_ID.nextval from dual

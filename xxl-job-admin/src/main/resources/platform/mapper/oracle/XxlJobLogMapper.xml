@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xxl.job.admin.mapper.XxlJobLogMapper">
+<mapper namespace="com.xxl.job.admin.business.mapper.XxlJobLogMapper">
 
-    <resultMap id="XxlJobLog" type="com.xxl.job.admin.model.XxlJobLog">
+    <resultMap id="XxlJobLog" type="com.xxl.job.admin.business.model.XxlJobLog" >
         <result column="ID" property="id"/>
 
         <result column="JOB_GROUP" property="jobGroup"/>
@@ -25,8 +25,8 @@
 
         <result column="ALARM_STATUS" property="alarmStatus"/>
 
-        <result column="JOB_DESC" property="jobDesc" />
-        <result column="GROUP_TITLE" property="groupTitle" />
+		<result column="JOB_NAME" property="jobName" />
+		<result column="GROUP_NAME" property="groupName" />
     </resultMap>
 
     <resultMap id="logReportMap" type="com.xxl.job.admin.platform.report.data.LogReportDto">
@@ -56,8 +56,8 @@
     <sql id="Base_Column_List_Page">
         <include refid="Base_Column_List"></include>
         ,
-		f."JOB_DESC",
-		g."TITLE" as "GROUP_TITLE"
+		f."NAME" as "JOB_NAME",
+		g."NAME" as "GROUP_NAME"
     </sql>
 
     <sql id="sqlPageListBody">
@@ -65,7 +65,7 @@
         left join XXL_JOB_INFO f on t."JOB_ID"=f."ID"
         left join XXL_JOB_GROUP g on t."JOB_GROUP" = g."ID"
         <where>
-            <if test="jobId==0 and jobGroup gt 0">
+            <if test="jobGroup gt 0">
                 AND t."JOB_GROUP" = #{jobGroup,jdbcType=NUMERIC}
             </if>
             <if test="jobId gt 0">
@@ -101,7 +101,7 @@
         SELECT
         <include refid="Base_Column_List_Page"/>
         <include refid="sqlPageListBody"></include>
-        ORDER BY t."TRIGGER_TIME" DESC
+        ORDER BY t."ID" DESC
 
 
         ) TMP
@@ -123,7 +123,7 @@
     </select>
 
 
-    <insert id="save" parameterType="com.xxl.job.admin.model.XxlJobLog" useGeneratedKeys="true" keyProperty="id">
+    <insert id="save" parameterType="com.xxl.job.admin.business.model.XxlJobLog" useGeneratedKeys="true" keyProperty="id">
         <selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Integer">
             select SEQ_XXL_JOB_LOG_ID.nextval from dual
         </selectKey>
@@ -162,6 +162,9 @@
         SET "HANDLE_TIME"= #{handleTime,jdbcType=TIMESTAMP},
             "HANDLE_CODE"= #{handleCode,jdbcType=NUMERIC},
             "HANDLE_MSG"= #{handleMsg,jdbcType=VARCHAR}
+        <if test="handleCode == 200">
+            ,"ALARM_STATUS"= 1
+        </if>
         WHERE "ID" = #{id,jdbcType=NUMERIC}
     </update>
 
@@ -224,7 +227,7 @@
                 </trim>
                 ORDER BY t."TRIGGER_TIME" desc
                 ) p
-                where p.ROWNUM &lt;= #{clearBeforeNum,jdbcType=NUMERIC}
+                where ROWNUM &lt;= #{clearBeforeNum,jdbcType=NUMERIC}
                 ) t1
                 )
             </if>
@@ -244,15 +247,13 @@
 
     <select id="findFailJobLogIds" resultType="long">
         select "ID"
-        from (SELECT "ID"
-              FROM XXL_JOB_LOG
-              WHERE NOT (
-                  ("TRIGGER_CODE" in (0, 200) and "HANDLE_CODE" = 0)
-                      OR
-                  ("HANDLE_CODE" = 200)
-                  )
-                AND "ALARM_STATUS" = 0
-              ORDER BY "ID" ASC) tmp
+        from (
+        SELECT "ID" FROM XXL_JOB_LOG
+              WHERE "ALARM_STATUS" = 0
+                AND "HANDLE_CODE" != 200
+			AND ("HANDLE_CODE" != 0 OR "TRIGGER_CODE" NOT IN (0, 200))
+              ORDER BY "ID" ASC
+              ) tmp
         where ROWNUM &lt;= #{pagesize,jdbcType=NUMERIC}
     </select>
 

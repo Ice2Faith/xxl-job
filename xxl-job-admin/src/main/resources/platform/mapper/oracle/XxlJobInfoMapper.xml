@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xxl.job.admin.mapper.XxlJobInfoMapper">
+<mapper namespace="com.xxl.job.admin.business.mapper.XxlJobInfoMapper">
 
-    <resultMap id="XxlJobInfo" type="com.xxl.job.admin.model.XxlJobInfo">
+    <resultMap id="XxlJobInfo" type="com.xxl.job.admin.business.model.XxlJobInfo" >
         <result column="ID" property="id"/>
 
         <result column="JOB_GROUP" property="jobGroup"/>
-        <result column="JOB_DESC" property="jobDesc"/>
+        <result column="NAME" property="name" />
 
         <result column="ADD_TIME" property="addTime"/>
         <result column="UPDATE_TIME" property="updateTime"/>
@@ -45,7 +45,7 @@
     <sql id="Base_Column_List">
         t."ID",
 		t."JOB_GROUP",
-		t."JOB_DESC",
+		t."NAME",
 		t."ADD_TIME",
 		t."UPDATE_TIME",
 		t."AUTHOR",
@@ -95,8 +95,8 @@
             <if test="triggerStatus gte 0">
                 AND t."TRIGGER_STATUS" = #{triggerStatus,jdbcType=NUMERIC}
             </if>
-            <if test="jobDesc != null and jobDesc != ''">
-                AND t."JOB_DESC" like CONCAT(CONCAT('%', #{jobDesc,jdbcType=VARCHAR}), '%')
+			<if test="name != null and name != ''">
+				AND t."NAME" like CONCAT(CONCAT('%', #{name}), '%')
             </if>
             <if test="executorHandler != null and executorHandler != ''">
                 AND t."EXECUTOR_HANDLER" like CONCAT(CONCAT('%', #{executorHandler,jdbcType=VARCHAR}), '%')
@@ -148,14 +148,14 @@
         <include refid="sqlPageListBody"></include>
     </select>
 
-    <insert id="save" parameterType="com.xxl.job.admin.model.XxlJobInfo">
+    <insert id="save" parameterType="com.xxl.job.admin.business.model.XxlJobInfo">
         <selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Integer">
             select SEQ_XXL_JOB_INFO_ID.nextval from dual
         </selectKey>
         INSERT INTO XXL_JOB_INFO (
         "ID",
         "JOB_GROUP",
-        "JOB_DESC",
+        "NAME",
         "ADD_TIME",
         "UPDATE_TIME",
         "AUTHOR",
@@ -181,7 +181,7 @@
         ) VALUES (
         #{id,jdbcType=NUMERIC},
         #{jobGroup,jdbcType=NUMERIC},
-        #{jobDesc,jdbcType=VARCHAR},
+        #{name,jdbcType=VARCHAR},
         #{addTime,jdbcType=TIMESTAMP},
         #{updateTime,jdbcType=TIMESTAMP},
         #{author,jdbcType=VARCHAR},
@@ -214,10 +214,10 @@
         WHERE t."ID" = #{id,jdbcType=NUMERIC}
     </select>
 
-    <update id="update" parameterType="com.xxl.job.admin.model.XxlJobInfo">
+    <update id="update" parameterType="com.xxl.job.admin.business.model.XxlJobInfo" >
         UPDATE XXL_JOB_INFO
         SET "JOB_GROUP"                 = #{jobGroup,jdbcType=NUMERIC},
-            "JOB_DESC"                  = #{jobDesc,jdbcType=VARCHAR},
+            "NAME"                      = #{name,jdbcType=VARCHAR},
             "UPDATE_TIME"               = #{updateTime,jdbcType=TIMESTAMP},
             "AUTHOR"                    = #{author,jdbcType=VARCHAR},
             "ALARM_EMAIL"               = #{alarmEmail,jdbcType=VARCHAR},
@@ -276,7 +276,7 @@
         where ROWNUM &lt;= #{pagesize,jdbcType=NUMERIC}
     </select>
 
-    <update id="scheduleUpdate" parameterType="com.xxl.job.admin.model.XxlJobInfo">
+    <update id="scheduleUpdate" parameterType="com.xxl.job.admin.business.model.XxlJobInfo"  >
         UPDATE XXL_JOB_INFO
         SET "TRIGGER_LAST_TIME" = #{triggerLastTime,jdbcType=NUMERIC},
             "TRIGGER_NEXT_TIME" = #{triggerNextTime,jdbcType=NUMERIC}
@@ -287,6 +287,39 @@
           AND "TRIGGER_STATUS" = 1
     </update>
 
+    <update id="scheduleBatchUpdate" parameterType="java.util.List">
+        UPDATE XXL_JOB_INFO
+        SET
+        "TRIGGER_LAST_TIME" = CASE "ID"
+        <foreach collection="list" item="item" separator=" ">
+            WHEN #{item.id} THEN #{item.triggerLastTime}
+        </foreach>
+        ELSE "TRIGGER_LAST_TIME"
+        END,
+        "TRIGGER_NEXT_TIME" = CASE "ID"
+        <foreach collection="list" item="item" separator=" ">
+            WHEN #{item.id} THEN #{item.triggerNextTime}
+        </foreach>
+        ELSE "TRIGGER_NEXT_TIME"
+        END,
+        "TRIGGER_STATUS" = CASE "ID"
+        <foreach collection="list" item="item" separator=" ">
+            WHEN #{item.id} THEN
+            <choose>
+                <when test="item.triggerStatus gte 0">
+                    #{item.triggerStatus}
+                </when>
+                <otherwise>"TRIGGER_STATUS"</otherwise>
+            </choose>
+        </foreach>
+        ELSE "TRIGGER_STATUS"
+        END
+        WHERE "ID" IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+        AND "TRIGGER_STATUS" = 1
+    </update>
     <sql id="batchCondition">
         <choose>
             <when test="post.operGroupIds!=null and !post.operGroupIds.isEmpty()">
@@ -302,8 +335,8 @@
         <if test="post.triggerStatus!=null">
             and "TRIGGER_STATUS"=#{post.triggerStatus}
         </if>
-        <if test="post.jobDesc!=null and post.jobDesc!=''">
-            and "JOB_DESC" like #{post.jobDesc}
+		<if test="post.name!=null and post.name!=''">
+			and "NAME" like #{post.name}
         </if>
         <if test="post.executorHandler!=null and post.executorHandler!=''">
             and "EXECUTOR_HANDLER" like #{post.executorHandler}

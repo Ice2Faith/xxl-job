@@ -21,7 +21,7 @@ public class LogBatchOperateDto {
     protected Integer groupRange;
     protected String jobGroup;
     protected Integer triggerStatus;
-    protected String jobDesc;
+    protected String name;
     protected String executorHandler;
     protected String author;
 

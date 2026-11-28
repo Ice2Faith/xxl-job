@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
@@ -29,6 +30,7 @@ import org.springframework.context.annotation.Bean;
 @NoArgsConstructor
 public class XxlJobAutoConfiguration {
 
+    @ConditionalOnMissingBean(XxlJobSpringExecutor.class)
     @Bean
     public XxlJobSpringExecutor xxlJobExecutor(XxlJobProperties properties) {
         log.info(">>>>>>>>>>> xxl-job config init.");
@@ -43,7 +45,14 @@ public class XxlJobAutoConfiguration {
         xxlJobSpringExecutor.setLogPath(properties.getExecutor().getLogPath());
         xxlJobSpringExecutor.setLogRetentionDays(properties.getExecutor().getLogRetentionDays());
 
+        xxlJobSpringExecutor.setEnabled(nonNull(properties.getExecutor().getEnabled(),true));
+        xxlJobSpringExecutor.setExcludedPackage(properties.getExecutor().getExcludedPackage());
+        xxlJobSpringExecutor.setGlueEnabled(nonNull(properties.getExecutor().getGlueEnabled(),true));
         return xxlJobSpringExecutor;
+    }
+
+    public static<T> T nonNull(T val,T def) {
+        return val==null?def:val;
     }
 
     /**

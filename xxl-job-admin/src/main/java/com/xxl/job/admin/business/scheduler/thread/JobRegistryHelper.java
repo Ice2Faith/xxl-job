@@ -1,0 +1,248 @@
+package com.xxl.job.admin.business.scheduler.thread;
+
+import com.xxl.job.admin.business.model.XxlJobGroup;
+import com.xxl.job.admin.business.model.XxlJobRegistry;
+import com.xxl.job.admin.business.scheduler.config.XxlJobAdminBootstrap;
+import com.xxl.job.core.constant.Const;
+import com.xxl.job.core.constant.RegistTypeEnum;
+import com.xxl.job.core.openapi.admin.dto.RegistryRequest;
+import com.xxl.tool.concurrent.CyclicThread;
+import com.xxl.tool.core.CollectionTool;
+import com.xxl.tool.core.StringTool;
+import com.xxl.tool.json.GsonTool;
+import com.xxl.tool.response.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.concurrent.*;
+
+/**
+ * job registry instance helper
+ *
+ * @author xuxueli 2016-10-02 19:10:24
+ */
+public class JobRegistryHelper {
+	private static final Logger logger = LoggerFactory.getLogger(JobRegistryHelper.class);
+
+
+	/**
+	 * registry or remove thread pool
+	 */
+	private ThreadPoolExecutor registryOrRemoveThreadPool = null;
+
+	/**
+	 * registry monitor thread
+	 */
+	private CyclicThread registryMonitorThread;
+
+	/**
+	 * job group cache
+	 */
+	private volatile Map<String, XxlJobGroup> appname2GroupCache = new ConcurrentHashMap<>();
+	private volatile Map<Integer, XxlJobGroup> id2GroupCache = new ConcurrentHashMap<>();
+
+	/**
+	 * start
+	 */
+	public void start(){
+
+		// 1、for registry or remove
+		registryOrRemoveThreadPool = new ThreadPoolExecutor(
+				2,
+				10,
+				30L,
+				TimeUnit.SECONDS,
+				new LinkedBlockingQueue<Runnable>(2000),
+				new ThreadFactory() {
+					@Override
+					public Thread newThread(Runnable r) {
+						return new Thread(r, "xxl-job, admin JobRegistryMonitorHelper-registryOrRemoveThreadPool-" + r.hashCode());
+					}
+				},
+				new RejectedExecutionHandler() {
+					@Override
+					public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+						r.run();
+						logger.warn(">>>>>>>>>>> xxl-job, registry or remove too fast, match threadpool rejected handler(run now).");
+					}
+				});
+
+		// 2、for registry monitor
+		registryMonitorThread = new CyclicThread("JobRegistryHelper#registryMonitorThread", true, new Runnable() {
+			@Override
+			public void run() {
+				// 2.1、refresh auto-registry group
+				List<XxlJobGroup> groupList = XxlJobAdminBootstrap.getInstance().getXxlJobGroupMapper().findByAddressType(0);
+				if (groupList!=null && !groupList.isEmpty()) {
+
+					// a、remove dead address (admin/executor)
+					Date deadTime = Date.from(LocalDateTime.now().plusSeconds(-Const.DEAD_TIMEOUT).atZone(ZoneId.systemDefault()).toInstant());
+					List<Integer> ids = XxlJobAdminBootstrap.getInstance().getXxlJobRegistryMapper().findDead(deadTime);
+					if (ids!=null && !ids.isEmpty()) {
+						XxlJobAdminBootstrap.getInstance().getXxlJobRegistryMapper().removeDead(ids);
+					}
+
+					// b、fresh online address (appname ： List<address>)
+					HashMap<String, List<String>> appnameAddressMap = new HashMap<>();
+					deadTime = Date.from(LocalDateTime.now().plusSeconds(-Const.DEAD_TIMEOUT).atZone(ZoneId.systemDefault()).toInstant());
+					List<XxlJobRegistry> list = XxlJobAdminBootstrap.getInstance().getXxlJobRegistryMapper().findAll(deadTime);
+					if (list != null) {
+						for (XxlJobRegistry item: list) {
+							if (RegistTypeEnum.EXECUTOR.name().equals(item.getRegistryGroup())) {
+								String appname = item.getRegistryKey();
+								List<String> registryList = appnameAddressMap.get(appname);
+								if (registryList == null) {
+									registryList = new ArrayList<String>();
+								}
+
+								if (!registryList.contains(item.getRegistryValue())) {
+									registryList.add(item.getRegistryValue());
+								}
+								appnameAddressMap.put(appname, registryList);
+							}
+						}
+					}
+
+					// c、write group address
+					for (XxlJobGroup group: groupList) {
+						List<String> registryList = appnameAddressMap.get(group.getAppname());
+						// generate address list
+						String addressListStr = null;
+						if (CollectionTool.isNotEmpty(registryList)) {
+							Collections.sort(registryList);
+							addressListStr = StringTool.join(registryList, ",");
+						}
+						// fill address
+						group.setAddressList(addressListStr);
+						group.setUpdateTime(new Date());
+
+						XxlJobAdminBootstrap.getInstance().getXxlJobGroupMapper().update(group);
+					}
+				}
+
+				// 2.2、refresh localcache
+				List<XxlJobGroup> jobGroupList = XxlJobAdminBootstrap.getInstance().getXxlJobGroupMapper().findAll();
+				Map<String, XxlJobGroup> appname2GroupCacheNew = new ConcurrentHashMap<>();
+				Map<Integer, XxlJobGroup> id2GroupCacheNew = new ConcurrentHashMap<>();
+				if (CollectionTool.isNotEmpty(jobGroupList)) {
+					for (XxlJobGroup group: jobGroupList) {
+						group.setUpdateTime(null);
+						appname2GroupCacheNew.put(group.getAppname(), group);
+						id2GroupCacheNew.put(group.getId(), group);
+					}
+				}
+				if (!GsonTool.toJson(appname2GroupCacheNew).equals(GsonTool.toJson(appname2GroupCache))) {
+					appname2GroupCache = appname2GroupCacheNew;
+					id2GroupCache = id2GroupCacheNew;
+					logger.info(">>>>>>>>>>> xxl-job, JobRegistryHelper, detect changes and refresh JobGroupCache success, appname2GroupCache:{}, id2GroupCache:{}", appname2GroupCache, id2GroupCache);
+				}
+				logger.debug(">>>>>>>>>>> xxl-job, JobRegistryHelper, refresh JobGroupCache success, appname2GroupCache:{}, id2GroupCache:{}", appname2GroupCache, id2GroupCache);
+
+			}
+		}, Const.BEAT_TIMEOUT * 1000L, true);
+		registryMonitorThread.start();
+	}
+
+
+	/**
+	 * stop
+	 */
+	public void stop(){
+
+		// 1、registryOrRemoveThreadPool
+		registryOrRemoveThreadPool.shutdownNow();
+
+		// 2、registryMonitorThread
+		registryMonitorThread.stop();
+	}
+
+
+	// ---------------------- tool ----------------------
+
+	/**
+	 * registry
+	 */
+	public Response<String> registry(RegistryRequest registryParam) {
+
+		// valid
+		if (StringTool.isBlank(registryParam.getRegistryGroup())
+				|| StringTool.isBlank(registryParam.getRegistryKey())
+				|| StringTool.isBlank(registryParam.getRegistryValue())) {
+			return Response.ofFail("Illegal Argument.");
+		}
+
+		// async execute
+		registryOrRemoveThreadPool.execute(new Runnable() {
+			@Override
+			public void run() {
+				// 0-fail; 1-save suc; 2-update suc;
+				/*int ret = XxlJobAdminBootstrap.getInstance().getXxlJobRegistryMapper().registrySaveOrUpdate(registryParam.getRegistryGroup(), registryParam.getRegistryKey(), registryParam.getRegistryValue(), new Date());
+				if (ret == 1) {
+					// fresh (add)
+					freshGroupRegistryInfo(registryParam);
+				}*/
+				int ret = XxlJobAdminBootstrap.getInstance().getXxlJobRegistryMapper().registryUpdate(registryParam.getRegistryGroup(), registryParam.getRegistryKey(), registryParam.getRegistryValue(), new Date());
+				if (ret < 1) {
+					XxlJobAdminBootstrap.getInstance().getXxlJobRegistryMapper().registrySave(registryParam.getRegistryGroup(), registryParam.getRegistryKey(), registryParam.getRegistryValue(), new Date());
+
+					// fresh
+					freshGroupRegistryInfo(registryParam);
+				}
+			}
+		});
+
+		return Response.ofSuccess();
+	}
+
+	/**
+	 * registry remove
+	 */
+	public Response<String> registryRemove(RegistryRequest registryParam) {
+
+		// valid
+		if (StringTool.isBlank(registryParam.getRegistryGroup())
+				|| StringTool.isBlank(registryParam.getRegistryKey())
+				|| StringTool.isBlank(registryParam.getRegistryValue())) {
+			return Response.ofFail("Illegal Argument.");
+		}
+
+		// async execute
+		registryOrRemoveThreadPool.execute(new Runnable() {
+			@Override
+			public void run() {
+				int ret = XxlJobAdminBootstrap.getInstance().getXxlJobRegistryMapper().registryDelete(registryParam.getRegistryGroup(), registryParam.getRegistryKey(), registryParam.getRegistryValue());
+				if (ret > 0) {
+					// fresh (delete)
+					freshGroupRegistryInfo(registryParam);
+				}
+			}
+		});
+
+		return Response.ofSuccess();
+	}
+
+	private void freshGroupRegistryInfo(RegistryRequest registryParam){
+		// Under consideration, prevent affecting core tables
+	}
+
+	// ---------------------- cache ----------------------
+
+	/**
+	 * load JobGroup by id
+	 */
+	public XxlJobGroup load(int jobGroup){
+		return id2GroupCache.get(jobGroup);
+	}
+
+	/**
+	 * load JobGroup by appname
+	 */
+	public XxlJobGroup loadByAppName(String appname){
+		return appname2GroupCache.get(appname);
+	}
+
+
+}

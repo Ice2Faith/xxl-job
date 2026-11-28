@@ -1,5 +1,5 @@
 <p align="center" >
-    <img src="https://www.xuxueli.com/doc/static/xxl-job/images/xxl-logo.jpg" width="150">
+    <img src="https://www.xuxueli.com/project/static/xxl-job/images/xxl-logo.jpg" width="150">
     <h3 align="center">XXL-JOB</h3>
     <p align="center">
         XXL-JOB, a distributed task scheduling framework.
@@ -80,6 +80,11 @@ XXL-JOB 是一个开源且免费项目，其正在进行的开发完全得益于
             <img width="150px" src="http://www.xuxueli.com/page/static/images/logo_mail4j.png" >
         </a>
     </td>
+    <td>
+        <a href="https://www.oudianyun.com/?source=x" title="" target="_blank" >
+            <img width="150px" src="http://www.xuxueli.com/page/static/images/logo_ody.png" >
+        </a>
+    </td>
 </tr>
 </table>
 <!-- supporter end -->
@@ -131,7 +136,7 @@ XXL-JOB 是一个开源且免费项目，其正在进行的开发完全得益于
 - 34、线程池隔离：调度线程池进行隔离拆分，慢任务自动降级进入"Slow"线程池，避免耗尽调度线程，提高系统稳定性；
 - 35、用户管理：支持在线管理系统用户，存在管理员、普通用户两种角色；
 - 36、权限控制：执行器维度进行权限控制，管理员拥有全量权限，普通用户需要分配执行器权限后才允许相关操作；
-- 37、AI任务：原生提供AI执行器，并内置多个AI任务Handler，与spring-ai、ollama、dify等集成打通，支持快速开发AI类任务。
+- 37、AI任务：原生提供AI执行器，并内置多个AI任务Handler，与spring-ai、ollama、openclaw、dify等集成打通，支持快速开发AI类任务。
 - 38、审计日志：记录任务操作敏感信息，用于系统监控、审计和安全分析，可快速追溯异常行为以及定位排查问题。
 - 39、优雅停机：调度中心停机，检测时间轮非空时主动等待调度完成；客户端停机，检测存在运行中任务时，停止接收新任务并主动等待任务执行完成；
 
@@ -891,6 +896,11 @@ XXL-JOB 是一个开源且免费项目，其正在进行的开发完全得益于
     - 716、上海爱诚裕信息科技有限公司
     - 717、杭州迈瑞数字科技有限公司
     - 718、广州串联网络科技有限公司
+    - 719、上海乐研化学试剂
+    - 720、智现未来
+    - 721、大庆点神科技有限公司
+    - 722、深圳市中科环球科技有限公司
+    - 723、江苏金箭车业制造有限公司
     - ……
 
 > 更多接入的公司，欢迎在 [登记地址](https://github.com/xuxueli/xxl-job/issues/1 ) 登记，登记仅仅为了产品推广。

@@ -1,12 +1,12 @@
 package com.xxl.job.executor.sample.frameless.config;
 
-import com.xxl.job.executor.sample.frameless.jobhandler.SampleXxlJob;
 import com.xxl.job.core.executor.impl.XxlJobSimpleExecutor;
+import com.xxl.job.executor.sample.frameless.jobhandler.SampleXxlJob;
 import com.xxl.tool.core.PropTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -35,18 +35,19 @@ public class FrameLessXxlJobConfig {
         // init executor
         xxlJobExecutor = new XxlJobSimpleExecutor();
         xxlJobExecutor.setAdminAddresses(xxlJobProp.getProperty("xxl.job.admin.addresses"));
-        xxlJobExecutor.setAccessToken(xxlJobProp.getProperty("xxl.job.admin.accessToken"));
-        xxlJobExecutor.setTimeout(Integer.valueOf(xxlJobProp.getProperty("xxl.job.admin.timeout")));
-        xxlJobExecutor.setEnabled(Boolean.valueOf(xxlJobProp.getProperty("xxl.job.executor.enabled")));
+        xxlJobExecutor.setTimeout(Integer.parseInt(xxlJobProp.getProperty("xxl.job.admin.timeout")));
+        xxlJobExecutor.setEnabled(Boolean.parseBoolean(xxlJobProp.getProperty("xxl.job.executor.enabled")));
         xxlJobExecutor.setAppname(xxlJobProp.getProperty("xxl.job.executor.appname"));
-        xxlJobExecutor.setAddress(xxlJobProp.getProperty("xxl.job.executor.address"));
+        xxlJobExecutor.setAccessToken(xxlJobProp.getProperty("xxl.job.executor.accessToken"));
         xxlJobExecutor.setIp(xxlJobProp.getProperty("xxl.job.executor.ip"));
-        xxlJobExecutor.setPort(Integer.valueOf(xxlJobProp.getProperty("xxl.job.executor.port")));
+        xxlJobExecutor.setPort(Integer.parseInt(xxlJobProp.getProperty("xxl.job.executor.port")));
+        xxlJobExecutor.setAddress(xxlJobProp.getProperty("xxl.job.executor.address"));
         xxlJobExecutor.setLogPath(xxlJobProp.getProperty("xxl.job.executor.logpath"));
-        xxlJobExecutor.setLogRetentionDays(Integer.valueOf(xxlJobProp.getProperty("xxl.job.executor.logretentiondays")));
+        xxlJobExecutor.setLogRetentionDays(Integer.parseInt(xxlJobProp.getProperty("xxl.job.executor.logretentiondays")));
+        xxlJobExecutor.setGlueEnabled(Boolean.parseBoolean(xxlJobProp.getProperty("xxl.job.executor.glueenabled")));
 
         // registry job bean
-        xxlJobExecutor.setXxlJobBeanList(Arrays.asList(new SampleXxlJob()));
+        xxlJobExecutor.setXxlJobBeanList(List.of(new SampleXxlJob()));
 
         // start executor
         try {

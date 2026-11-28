@@ -1,9 +1,10 @@
 package com.xxl.job.openapi;
 
-import com.xxl.job.core.constant.RegistType;
-import com.xxl.job.core.openapi.AdminBiz;
-import com.xxl.job.core.openapi.model.CallbackRequest;
-import com.xxl.job.core.openapi.model.RegistryRequest;
+import com.xxl.job.core.constant.RegistTypeEnum;
+import com.xxl.job.core.openapi.admin.AdminBiz;
+import com.xxl.job.core.openapi.admin.dto.CallbackData;
+import com.xxl.job.core.openapi.admin.dto.CallbackRequest;
+import com.xxl.job.core.openapi.admin.dto.RegistryRequest;
 import com.xxl.job.core.context.XxlJobContext;
 import com.xxl.job.core.constant.Const;
 import com.xxl.tool.http.HttpTool;
@@ -12,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -25,16 +25,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class AdminBizTest {
     private static final Logger logger = LoggerFactory.getLogger(AdminBizTest.class);
 
-    private static String addressUrl = "http://127.0.0.1:8080/xxl-job-admin";
+    private static String addressUrl = "http://127.0.0.1:8080";
     private static String accessToken = "default_token";
+    private static String appname = "xxl-job-executor-sample";
 
     private AdminBiz buildClient(){
         String finalUrl = addressUrl + "/api";
 
         return HttpTool.createClient()
                 .url(finalUrl)
-                .timeout(3 * 1000)
+                .connectTimeout(3 * 1000)
+                .readTimeout(3 * 1000)
                 .header(Const.XXL_JOB_ACCESS_TOKEN, accessToken)
+                .header(Const.XXL_JOB_APPNAME, appname)
                 .proxy(AdminBiz.class);
     }
 
@@ -42,13 +45,13 @@ public class AdminBizTest {
     public void callback() throws Exception {
         AdminBiz adminBiz = buildClient();
 
-        CallbackRequest param = new CallbackRequest();
+        CallbackData param = new CallbackData();
         param.setLogId(1);
         param.setHandleCode(XxlJobContext.HANDLE_CODE_SUCCESS);
 
-        List<CallbackRequest> callbackParamList = Arrays.asList(param);
+        CallbackRequest callbackParam = new CallbackRequest(List.of(param));
 
-        Response<String> returnT = adminBiz.callback(callbackParamList);
+        Response<String> returnT = adminBiz.callback(callbackParam);
         assertTrue(returnT.isSuccess());
     }
 
@@ -61,7 +64,7 @@ public class AdminBizTest {
     public void registry() throws Exception {
         AdminBiz adminBiz = buildClient();
 
-        RegistryRequest registryParam = new RegistryRequest(RegistType.EXECUTOR.name(), "xxl-job-executor-example", "127.0.0.1:9999");
+        RegistryRequest registryParam = new RegistryRequest(RegistTypeEnum.EXECUTOR.name(), "xxl-job-executor-sample", "127.0.0.1:9999");
 
         Response<String> returnT = adminBiz.registry(registryParam);
         assertTrue(returnT.isSuccess());
@@ -76,7 +79,7 @@ public class AdminBizTest {
     public void registryRemove() throws Exception {
         AdminBiz adminBiz = buildClient();
 
-        RegistryRequest registryParam = new RegistryRequest(RegistType.EXECUTOR.name(), "xxl-job-executor-example", "127.0.0.1:9999");
+        RegistryRequest registryParam = new RegistryRequest(RegistTypeEnum.EXECUTOR.name(), "xxl-job-executor-sample", "127.0.0.1:9999");
 
         Response<String> returnT = adminBiz.registryRemove(registryParam);
         assertTrue(returnT.isSuccess());

@@ -1,12 +1,12 @@
 package com.xxl.job.admin.platform;
 
-import com.xxl.job.admin.mapper.XxlJobInfoMapper;
-import com.xxl.job.admin.model.XxlJobInfo;
+import com.xxl.job.admin.business.mapper.XxlJobInfoMapper;
+import com.xxl.job.admin.business.model.XxlJobInfo;
+import jakarta.annotation.Resource;
 import lombok.Data;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;

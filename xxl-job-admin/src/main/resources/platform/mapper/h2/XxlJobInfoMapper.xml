@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xxl.job.admin.mapper.XxlJobInfoMapper">
+<mapper namespace="com.xxl.job.admin.business.mapper.XxlJobInfoMapper">
 
-	<resultMap id="XxlJobInfo" type="com.xxl.job.admin.model.XxlJobInfo" >
+	<resultMap id="XxlJobInfo" type="com.xxl.job.admin.business.model.XxlJobInfo" >
 		<result column="id" property="id" />
 
 		<result column="job_group" property="jobGroup" />
-	    <result column="job_desc" property="jobDesc" />
+	    <result column="name" property="name" />
 
 	    <result column="add_time" property="addTime" />
 	    <result column="update_time" property="updateTime" />
@@ -45,7 +45,7 @@
 	<sql id="Base_Column_List">
 		t.id,
 		t.job_group,
-		t.job_desc,
+		t.name,
 		t.add_time,
 		t.update_time,
 		t.author,
@@ -95,8 +95,8 @@
 			<if test="triggerStatus gte 0">
 				AND t.trigger_status = #{triggerStatus}
 			</if>
-			<if test="jobDesc != null and jobDesc != ''">
-				AND t.job_desc like CONCAT(CONCAT('%', #{jobDesc}), '%')
+			<if test="name != null and name != ''">
+				AND t.name like CONCAT(CONCAT('%', #{name}), '%')
 			</if>
 			<if test="executorHandler != null and executorHandler != ''">
 				AND t.executor_handler like CONCAT(CONCAT('%', #{executorHandler}), '%')
@@ -138,10 +138,10 @@
 		<include refid="sqlPageListBody"></include>
 	</select>
 
-	<insert id="save" parameterType="com.xxl.job.admin.model.XxlJobInfo" useGeneratedKeys="true" keyProperty="id" >
+	<insert id="save" parameterType="com.xxl.job.admin.business.model.XxlJobInfo" useGeneratedKeys="true" keyProperty="id" >
 		INSERT INTO xxl_job_info (
 			job_group,
-			job_desc,
+			name,
 			add_time,
 			update_time,
 			author,
@@ -166,7 +166,7 @@
 		    remark
 		) VALUES (
 			#{jobGroup},
-			#{jobDesc},
+			#{name},
 			#{addTime},
 			#{updateTime},
 			#{author},
@@ -198,11 +198,11 @@
 		WHERE t.id = #{id}
 	</select>
 
-	<update id="update" parameterType="com.xxl.job.admin.model.XxlJobInfo" >
+	<update id="update" parameterType="com.xxl.job.admin.business.model.XxlJobInfo" >
 		UPDATE xxl_job_info
 		SET
 			job_group = #{jobGroup},
-			job_desc = #{jobDesc},
+			name = #{name},
 			update_time = #{updateTime},
 			author = #{author},
 			alarm_email = #{alarmEmail},
@@ -254,7 +254,7 @@
 		LIMIT #{pagesize}
 	</select>
 
-	<update id="scheduleUpdate" parameterType="com.xxl.job.admin.model.XxlJobInfo"  >
+	<update id="scheduleUpdate" parameterType="com.xxl.job.admin.business.model.XxlJobInfo"  >
 		UPDATE xxl_job_info
 		SET
 			trigger_last_time = #{triggerLastTime},
@@ -264,6 +264,40 @@
 			</if>
 		WHERE id = #{id}
 		  AND trigger_status = 1
+	</update>
+
+	<update id="scheduleBatchUpdate" parameterType="java.util.List">
+		UPDATE xxl_job_info
+		SET
+		trigger_last_time = CASE id
+		<foreach collection="list" item="item" separator=" ">
+			WHEN #{item.id} THEN #{item.triggerLastTime}
+		</foreach>
+		ELSE trigger_last_time
+		END,
+		trigger_next_time = CASE id
+		<foreach collection="list" item="item" separator=" ">
+			WHEN #{item.id} THEN #{item.triggerNextTime}
+		</foreach>
+		ELSE trigger_next_time
+		END,
+		trigger_status = CASE id
+		<foreach collection="list" item="item" separator=" ">
+			WHEN #{item.id} THEN
+			<choose>
+				<when test="item.triggerStatus gte 0">
+					#{item.triggerStatus}
+				</when>
+				<otherwise>trigger_status</otherwise>
+			</choose>
+		</foreach>
+		ELSE trigger_status
+		END
+		WHERE id IN
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item.id}
+		</foreach>
+		AND trigger_status = 1
 	</update>
 
 	<sql id="batchCondition">
@@ -281,8 +315,8 @@
 		<if test="post.triggerStatus!=null">
 			and trigger_status=#{post.triggerStatus}
 		</if>
-		<if test="post.jobDesc!=null and post.jobDesc!=''">
-			and job_desc like #{post.jobDesc}
+		<if test="post.name!=null and post.name!=''">
+			and name like #{post.name}
 		</if>
 		<if test="post.executorHandler!=null and post.executorHandler!=''">
 			and executor_handler like #{post.executorHandler}

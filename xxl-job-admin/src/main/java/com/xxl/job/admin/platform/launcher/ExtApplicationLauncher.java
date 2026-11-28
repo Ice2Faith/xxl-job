@@ -55,14 +55,37 @@ public class ExtApplicationLauncher {
             throw new IllegalArgumentException(String.format("missing jvm argument -D%s= or %s defined in Manifest", MAIN_CLASS_PROPERTY, MAIN_CLASS_MANIFEST));
         }
 
-        log(MAIN_CLASS_PROPERTY+": " + mainClass);
+        log(MAIN_CLASS_PROPERTY + ": " + mainClass);
 
         Thread.currentThread().setContextClassLoader(loader);
 
+        // 找到真实的main
         Class<?> clazz = Class.forName(mainClass, false, Thread.currentThread().getContextClassLoader());
         Method method = clazz.getDeclaredMethod("main", String[].class);
         method.setAccessible(true);
+
+        // 处理自定义插件
+        List<ExtLauncherSpi> list = getExtLauncherSpis(loader);
+        for (ExtLauncherSpi spi : list) {
+            try {
+                spi.premain(clazz, args);
+            } catch (Throwable e) {
+                System.err.println("ext launcher spi premain error: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        // 启动真实的main
         method.invoke(null, (Object) args);
+    }
+
+    private static List<ExtLauncherSpi> getExtLauncherSpis(ClassLoader loader) {
+        List<ExtLauncherSpi> list = new ArrayList<>();
+        ServiceLoader<ExtLauncherSpi> loaders = ServiceLoader.load(ExtLauncherSpi.class, loader);
+        for (ExtLauncherSpi spi : loaders) {
+            list.add(spi);
+        }
+        return list;
     }
 
 
@@ -75,7 +98,7 @@ public class ExtApplicationLauncher {
         for (URL url : urls) {
             log("ext-resource: " + url);
         }
-        return new ExtClasspathClassLoader(urls.toArray(new URL[0]), this.getClass().getClassLoader());
+        return new ExtClasspathClassLoader(urls.toArray(new URL[0]), Thread.currentThread().getContextClassLoader());
     }
 
     public List<URL> getPathUrls(List<String> paths) {
@@ -84,12 +107,12 @@ public class ExtApplicationLauncher {
             if (path == null || path.isEmpty()) {
                 continue;
             }
-            resolvePathUrls(true,new File(path), ret);
+            resolvePathUrls(true, new File(path), ret);
         }
         return new ArrayList<>(ret);
     }
 
-    public void resolvePathUrls(boolean isRoot,File file, Set<URL> ret) {
+    public void resolvePathUrls(boolean isRoot, File file, Set<URL> ret) {
         if (file == null) {
             return;
         }
@@ -97,7 +120,7 @@ public class ExtApplicationLauncher {
             return;
         }
         if (file.isDirectory()) {
-            if(isRoot) {
+            if (isRoot) {
                 try {
                     URL url = file.toURI().toURL();
                     ret.add(url);
@@ -110,7 +133,7 @@ public class ExtApplicationLauncher {
                 if (files != null) {
                     for (File item : files) {
                         try {
-                            resolvePathUrls(false,item, ret);
+                            resolvePathUrls(false, item, ret);
                         } catch (Exception e) {
 
                         }
@@ -123,7 +146,7 @@ public class ExtApplicationLauncher {
             String name = file.getName();
             String suffix = getSuffix(name);
 
-            if(isRoot || ".jar".equals(suffix)) {
+            if (isRoot || ".jar".equals(suffix)) {
                 try {
                     URL url = file.toURI().toURL();
                     ret.add(url);
@@ -138,7 +161,6 @@ public class ExtApplicationLauncher {
 
                 }
             }
-
 
 
             if (".jar".equals(suffix)) {
@@ -272,8 +294,8 @@ public class ExtApplicationLauncher {
         return null;
     }
 
-    public String getManifestProperty(String key) throws Exception {
-        ProtectionDomain protectionDomain = this.getClass().getProtectionDomain();
+    public Manifest getManifestByClass(Class<?> clazz) throws Exception {
+        ProtectionDomain protectionDomain = clazz.getProtectionDomain();
         CodeSource codeSource = protectionDomain.getCodeSource();
         if (codeSource == null) {
             return null;
@@ -288,6 +310,26 @@ public class ExtApplicationLauncher {
         }
         File file = new File(path);
         Manifest manifest = getManifest(file);
+        return manifest;
+    }
+
+    public Manifest getManifestByResource(ClassLoader loader) throws Exception {
+        URL url = Thread.currentThread().getContextClassLoader().getResource("META-INF/MANIFEST.MF");
+        if (url == null) {
+            return null;
+        }
+        Manifest ret = new Manifest(url.openStream());
+        return ret;
+    }
+
+    public String getManifestProperty(String key) throws Exception {
+        Manifest manifest = getManifestByResource(Thread.currentThread().getContextClassLoader());
+        if (manifest == null) {
+            manifest = getManifestByResource(this.getClass().getClassLoader());
+        }
+        if (manifest == null) {
+            manifest = getManifestByClass(this.getClass());
+        }
         if (manifest == null) {
             return null;
         }

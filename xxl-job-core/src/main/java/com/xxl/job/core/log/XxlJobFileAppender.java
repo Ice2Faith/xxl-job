@@ -1,6 +1,6 @@
 package com.xxl.job.core.log;
 
-import com.xxl.job.core.openapi.model.LogResult;
+import com.xxl.job.core.openapi.executor.dto.LogData;
 import com.xxl.tool.core.DateTool;
 import com.xxl.tool.core.StringTool;
 import com.xxl.tool.io.FileTool;
@@ -33,14 +33,20 @@ public class XxlJobFileAppender {
 	 * 	---/2017-12-25/821.log
 	 *
 	 */
-	private static String logBasePath = "/data/applogs/xxl-job/jobhandler";
-	private static String glueSrcPath = logBasePath.concat(File.separator).concat("gluesource");
-	private static String callbackLogPath = logBasePath.concat(File.separator).concat("callbacklogs");
+	private static String logBasePath;
+	private static String glueSrcPath;
+	private static String callbackLogPath;
+
+	/**
+	 * init log path
+	 */
 	public static void initLogPath(String logPath) throws IOException {
 		// init
-		if (StringTool.isNotBlank(logPath)) {
-			logBasePath = logPath.trim();
+		if (StringTool.isBlank(logPath)) {
+			throw new RuntimeException("xxl-job logPath cannot be empty");
 		}
+		logBasePath = logPath.trim();
+
 		// mk base dir
 		File logPathDir = new File(logBasePath);
         FileTool.createDirectories(logPathDir);
@@ -50,6 +56,11 @@ public class XxlJobFileAppender {
 		File glueBaseDir = new File(logPathDir, "gluesource");
         FileTool.createDirectories(glueBaseDir);
 		glueSrcPath = glueBaseDir.getPath();
+
+		// mk callback log dir
+		File callbackBaseDir = new File(logPathDir, "callbacklogs");
+        FileTool.createDirectories(callbackBaseDir);
+		callbackLogPath = callbackBaseDir.getPath();
 	}
 	public static String getLogPath() {
 		return logBasePath;
@@ -112,14 +123,14 @@ public class XxlJobFileAppender {
 	 * @param fromLineNum	from line num
 	 * @return log content
 	 */
-	public static LogResult readLog(String logFileName, final int fromLineNum){
+	public static LogData readLog(String logFileName, final int fromLineNum){
 
 		// valid
 		if (StringTool.isBlank(logFileName)) {
-            return new LogResult(fromLineNum, 0, "readLog fail, logFile not found", true);
+            return new LogData(fromLineNum, 0, "readLog fail, logFile not found", true);
 		}
 		if (!FileTool.exists(logFileName)) {
-            return new LogResult(fromLineNum, 0, "readLog fail, logFile not exists", true);
+            return new LogData(fromLineNum, 0, "readLog fail, logFile not exists", true);
 		}
 
 		// read data
@@ -157,7 +168,7 @@ public class XxlJobFileAppender {
         }
 
         // result
-        return new LogResult(fromLineNum, toLineNum.get(), logContentBuilder.toString(), false);
+        return new LogData(fromLineNum, toLineNum.get(), logContentBuilder.toString(), false);
 	}
 
 }

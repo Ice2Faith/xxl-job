@@ -1,6 +1,6 @@
 package com.xxl.job.admin.platform.init;
 
-import com.xxl.job.admin.scheduler.config.XxlJobAdminBootstrap;
+import com.xxl.job.admin.business.scheduler.config.XxlJobAdminBootstrap;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

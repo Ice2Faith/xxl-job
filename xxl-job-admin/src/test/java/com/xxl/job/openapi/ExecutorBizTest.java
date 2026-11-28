@@ -1,8 +1,8 @@
 package com.xxl.job.openapi;
 
 import com.xxl.job.core.constant.Const;
-import com.xxl.job.core.openapi.ExecutorBiz;
-import com.xxl.job.core.openapi.model.*;
+import com.xxl.job.core.openapi.executor.ExecutorBiz;
+import com.xxl.job.core.openapi.executor.dto.*;
 import com.xxl.job.core.constant.ExecutorBlockStrategyEnum;
 import com.xxl.job.core.glue.GlueTypeEnum;
 import com.xxl.tool.http.HttpTool;
@@ -22,12 +22,15 @@ public class ExecutorBizTest {
 
     private static String addressUrl = "http://127.0.0.1:9999/";
     private static String accessToken = "default_token";
+    private static String appname = "xxl-job-executor-sample";
 
     private ExecutorBiz buildClient(){
         return HttpTool.createClient()
                 .url(addressUrl)
-                .timeout(3 * 1000)
+                .connectTimeout(3 * 1000)
+                .readTimeout(3 * 1000)
                 .header(Const.XXL_JOB_ACCESS_TOKEN, accessToken)
+                .header(Const.XXL_JOB_APPNAME, appname)
                 .proxy(ExecutorBiz.class);
     }
 
@@ -36,12 +39,12 @@ public class ExecutorBizTest {
         ExecutorBiz executorBiz = buildClient();
         // Act
         final Response<String> retval = executorBiz.beat();
+        logger.info("retval:{}", retval);
 
         // Assert result
         Assertions.assertNotNull(retval);
         Assertions.assertNull(((Response<String>) retval).getData());
         Assertions.assertEquals(200, retval.getCode());
-        Assertions.assertNull(retval.getMsg());
     }
 
     @Test
@@ -61,7 +64,7 @@ public class ExecutorBizTest {
     }
 
     @Test
-    public void run(){
+    public void trigger(){
         ExecutorBiz executorBiz = buildClient();
 
         // trigger data
@@ -77,7 +80,7 @@ public class ExecutorBizTest {
         triggerParam.setLogDateTime(System.currentTimeMillis());
 
         // Act
-        final Response<String> retval = executorBiz.run(triggerParam);
+        final Response<String> retval = executorBiz.trigger(triggerParam);
 
         // Assert result
         Assertions.assertNotNull(retval);
@@ -104,12 +107,12 @@ public class ExecutorBizTest {
     public void log(){
         ExecutorBiz executorBiz = buildClient();
 
-        final long logDateTim = 0L;
-        final long logId = 0;
+        final long logId = 2;
+        final long logDateTim = System.currentTimeMillis();
         final int fromLineNum = 0;
 
         // Act
-        final Response<LogResult> retval = executorBiz.log(new LogRequest(logDateTim, logId, fromLineNum));
+        final Response<LogData> retval = executorBiz.log(new LogRequest(logId, logDateTim, fromLineNum));
 
         // Assert result
         Assertions.assertNotNull(retval);

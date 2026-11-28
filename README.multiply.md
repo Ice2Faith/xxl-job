@@ -3,9 +3,9 @@
 ## project
 - this project is a branch from https://github.com/xuxueli/xxl-job .
 - and this project was forked
-- it changes include in pull request https://github.com/xuxueli/xxl-job/pull/3899
+- it changes include in pull request https://github.com/xuxueli/xxl-job/pull/3462
 ```shell
-feat(多数据库): 支持多数据库类型、国密加密传输、Bcrypt慢速散列盐存储密码、批量操作
+feat(database): support multiply database type & secure enhance #3462
 ```
 - aim to adapt oracle/gbase xxl-job-admin.
 - those change not effect xxl-job-core,.
@@ -31,20 +31,9 @@ xxl.job.platform.type=mysql
 ```
 - 实际上，mysql 的语法适用于 gbase ，或者其他兼容的数据库，所以其他数据库也可以使用 mysql 平台
 
-## Repository
-- fork github: https://github.com/Ice2Faith/xxl-job.git
-
-- mirror gitee: https://gitee.com/ice2faith/xxl-job.git 
-- release package maybe storage on mirror repository
-
-- fork 仓库 github: https://github.com/Ice2Faith/xxl-job.git
-
-- 镜像仓库 gitee: https://gitee.com/ice2faith/xxl-job.git
-- 发行版二进制包可能会发布在镜像仓库中
-
 ## notice
-- 2026-01-06
-    - 同步最新的3.4.0-SNAPSHOT版本，跟随官方依赖 springboot4,jdk17
+- 2026-11-28
+    - 同步最新的3.5.0版本，跟随官方依赖 springboot4,jdk17
 - 2026-01-06
     - 同步最新的3.3.2版本，跟随官方依赖 springboot4,jdk17
 - 2026-01-06
@@ -162,7 +151,7 @@ xxl.job.platform.type=mysql
 - 1. download the package
     - xxl-job-admin-all.tar.gz
 ```shell
-wget https://gitee.com/ice2faith/xxl-job/releases/download/v3.3.1/xxl-job-admin-all.tar.gz
+wget https://gitee.com/ice2faith/xxl-job/releases/download/v3.5.0/xxl-job-admin-all.tar.gz
 ```
 ```
 - 2. release it
@@ -195,29 +184,29 @@ java -jar xxl-job-admin.jar
 - login page
 - 登录页
 
-![img_login.png](./doc/images/img_login.png)
+![img_login.png](./doc/platform/images/img_login.png)
 
 - index page
 - 首页
 
-![img_index.png](./doc/images/img_index.png)
+![img_index.png](./doc/platform/images/img_index.png)
 
 - encrypt transport
 - 加密传输
 
-![img_crypto.png](./doc/images/img_crypto.png)
+![img_crypto.png](./doc/platform/images/img_crypto.png)
 
 - log page enhance
 - 日志页增强
 
-![img_log_page.png](./doc/images/img_log_page.png)
+![img_log_page.png](./doc/platform/images/img_log_page.png)
 
 - executor page
 - 执行器页面
 
-![img_registry.png](./doc/images/img_registry.png)
+![img_registry.png](./doc/platform/images/img_registry.png)
 
 - task page
 - 任务页面
 
-![img_task.png](./doc/images/img_task.png)
+![img_task.png](./doc/platform/images/img_task.png)

@@ -21,3 +21,6 @@ xxl:
       log-path: ./xxj-job/logs
       ### xxl-job executor log-retention-days
       log-retention-days: 30
+      enabled: true
+      # excluded-package: ""
+      glue-enabled: true
