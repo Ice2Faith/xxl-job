@@ -1,5 +1,6 @@
 package com.xxl.job.admin.business.scheduler.thread;
 
+import com.xxl.job.admin.platform.report.data.LogReportDto;
 import com.xxl.job.admin.business.model.XxlJobLogReport;
 import com.xxl.job.admin.business.scheduler.config.XxlJobAdminBootstrap;
 import com.xxl.tool.concurrent.CyclicThread;
@@ -67,11 +68,11 @@ public class JobLogReportHelper {
                     xxlJobLogReport.setUpdateTime(new Date());
 
                     // fill count-data
-                    Map<String, Object> triggerCountMap = XxlJobAdminBootstrap.getInstance().getXxlJobLogMapper().findLogReport(todayFrom, todayTo);
-                    if (triggerCountMap!=null && !triggerCountMap.isEmpty()) {
-                        int triggerDayCount = triggerCountMap.containsKey("triggerDayCount")?Integer.parseInt(String.valueOf(triggerCountMap.get("triggerDayCount"))):0;
-                        int triggerDayCountRunning = triggerCountMap.containsKey("triggerDayCountRunning")?Integer.parseInt(String.valueOf(triggerCountMap.get("triggerDayCountRunning"))):0;
-                        int triggerDayCountSuc = triggerCountMap.containsKey("triggerDayCountSuc")?Integer.parseInt(String.valueOf(triggerCountMap.get("triggerDayCountSuc"))):0;
+                    LogReportDto triggerCountMap = XxlJobAdminBootstrap.getInstance().getXxlJobLogMapper().findLogReport(todayFrom, todayTo);
+                    if (triggerCountMap!=null) {
+                                int triggerDayCount = triggerCountMap.getTriggerDayCount();
+                                int triggerDayCountRunning = triggerCountMap.getTriggerDayCountRunning();
+                                int triggerDayCountSuc = triggerCountMap.getTriggerDayCountSuc();
                         int triggerDayCountFail = triggerDayCount - triggerDayCountRunning - triggerDayCountSuc;
 
                         xxlJobLogReport.setRunningCount(triggerDayCountRunning);
@@ -80,10 +81,10 @@ public class JobLogReportHelper {
                     }
 
                     // do refresh:
-                    XxlJobAdminBootstrap.getInstance().getXxlJobLogReportMapper().saveOrUpdate(xxlJobLogReport);      // 0-fail; 1-save suc; 2-update suc;
-                        /*if (ret < 1) {
-                            XxlJobAdminBootstrap.getInstance().getXxlJobLogReportMapper().save(xxlJobLogReport);
-                        }*/
+                    int ret = XxlJobAdminBootstrap.getInstance().getXxlJobLogReportMapper().update(xxlJobLogReport);// 0-fail; 1-save suc; 2-update suc;
+                    if (ret < 1) {
+                        XxlJobAdminBootstrap.getInstance().getXxlJobLogReportMapper().save(xxlJobLogReport);
+                    }
                 }
 
                 // 2、log-clean: switch open & once each day

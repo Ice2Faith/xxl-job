@@ -1,11 +1,17 @@
 # for backend
 *.iml
-/.idea
+.idea
 **/target/
 .classpath
 .project
+logs
+*.log
+target/
 .DS_Store
 .gitattributes
+*.bak
+*.tmp
+~.*
 
 # for fontend
 node_modules/

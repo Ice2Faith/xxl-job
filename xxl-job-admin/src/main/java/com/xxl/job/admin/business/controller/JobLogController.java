@@ -12,6 +12,7 @@ import com.xxl.job.admin.business.scheduler.exception.XxlJobException;
 import com.xxl.job.admin.business.service.XxlJobService;
 import com.xxl.job.admin.framework.util.I18nUtil;
 import com.xxl.job.admin.framework.util.JobGroupPermissionUtil;
+import com.xxl.job.admin.platform.pageable.data.PageDto;
 import com.xxl.job.core.context.XxlJobContext;
 import com.xxl.job.core.openapi.executor.ExecutorBiz;
 import com.xxl.job.core.openapi.executor.dto.KillRequest;
@@ -134,8 +135,9 @@ public class JobLogController {
 		}
 		
 		// page query
-		List<XxlJobLog> list = xxlJobLogMapper.pageList(offset, pagesize, jobGroup, jobId, triggerTimeStart, triggerTimeEnd, logStatus);
-		int list_count = xxlJobLogMapper.pageListCount(offset, pagesize, jobGroup, jobId, triggerTimeStart, triggerTimeEnd, logStatus);
+		PageDto page=PageDto.ofOffsetSize(offset,pagesize);
+		List<XxlJobLog> list = xxlJobLogMapper.pageList(page, jobGroup, jobId, triggerTimeStart, triggerTimeEnd, logStatus);
+		int list_count = xxlJobLogMapper.pageListCount(jobGroup, jobId, triggerTimeStart, triggerTimeEnd, logStatus);
 
 		// model > dto
 		List<XxlJobLogDTO> listDTO = list.stream().map(XxlJobLogDTO::new).toList();

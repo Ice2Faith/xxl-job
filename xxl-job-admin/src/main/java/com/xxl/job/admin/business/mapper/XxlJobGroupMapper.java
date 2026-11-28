@@ -1,6 +1,7 @@
 package com.xxl.job.admin.business.mapper;
 
 import com.xxl.job.admin.business.model.XxlJobGroup;
+import com.xxl.job.admin.platform.pageable.data.PageDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -26,14 +27,11 @@ public interface XxlJobGroupMapper {
 
     public XxlJobGroup loadByAppname(@Param("appname") String appname);
 
-    public List<XxlJobGroup> pageList(@Param("offset") int offset,
-                                      @Param("pagesize") int pagesize,
+    public List<XxlJobGroup> pageList(@Param("page") PageDto page,
                                       @Param("appname") String appname,
                                       @Param("name") String name);
 
-    public int pageListCount(@Param("offset") int offset,
-                             @Param("pagesize") int pagesize,
-                             @Param("appname") String appname,
+    public int pageListCount(@Param("appname") String appname,
                              @Param("name") String name);
 
 }

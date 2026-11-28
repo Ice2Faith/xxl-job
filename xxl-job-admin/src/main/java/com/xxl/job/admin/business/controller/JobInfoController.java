@@ -10,6 +10,7 @@ import com.xxl.job.admin.business.scheduler.type.ScheduleTypeEnum;
 import com.xxl.job.admin.business.service.XxlJobService;
 import com.xxl.job.admin.framework.util.I18nUtil;
 import com.xxl.job.admin.framework.util.JobGroupPermissionUtil;
+import com.xxl.job.admin.platform.batch.data.LogBatchOperateDto;
 import com.xxl.job.core.constant.ExecutorBlockStrategyEnum;
 import com.xxl.job.core.glue.GlueTypeEnum;
 import com.xxl.sso.core.helper.XxlSsoHelper;
@@ -206,6 +207,16 @@ public class JobInfoController {
 		}
 		return Response.ofSuccess(result);
 
+	}
+
+	@RequestMapping("/batch-operate")
+	@ResponseBody
+	public Response<String> batchOperate(HttpServletRequest request, LogBatchOperateDto operateDto) {
+
+		// opt
+		Response<LoginInfo> loginInfoResponse = XxlSsoHelper.loginCheckWithAttr(request);
+		LoginInfo loginInfo = loginInfoResponse.getData();
+		return xxlJobService.batchOperate(operateDto, loginInfo);
 	}
 
 }

@@ -6,6 +6,7 @@ import com.xxl.job.admin.business.scheduler.config.XxlJobAdminBootstrap;
 import com.xxl.job.admin.business.scheduler.misfire.MisfireStrategyEnum;
 import com.xxl.job.admin.business.scheduler.trigger.TriggerTypeEnum;
 import com.xxl.job.admin.business.scheduler.type.ScheduleTypeEnum;
+import com.xxl.job.admin.platform.DatabasePlatformUtil;
 import com.xxl.tool.core.CollectionTool;
 import com.xxl.tool.core.MapTool;
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author xuxueli 2019-05-21
@@ -38,6 +40,7 @@ public class JobScheduleHelper {
     private volatile boolean scheduleThreadToStop = false;
     private volatile boolean ringThreadToStop = false;
     private final Map<Integer, List<Integer>> ringData = new ConcurrentHashMap<>();
+    public static final ReentrantLock lock=new ReentrantLock();
 
     /**
      * start
@@ -73,12 +76,18 @@ public class JobScheduleHelper {
                     long start = System.currentTimeMillis();
                     boolean preReadSuc = true;
 
+                    boolean standalone=DatabasePlatformUtil.isStandalone();
+                    if(standalone){
+                        lock.lock();
+                    }
                     // transaction start
                     TransactionStatus transactionStatus = null;
                     try {
                         transactionStatus = XxlJobAdminBootstrap.getInstance().getTransactionManager().getTransaction(new DefaultTransactionDefinition());
-                        // 1、job lock
-                        String lockedRecord = XxlJobAdminBootstrap.getInstance().getXxlJobLockMapper().scheduleLock();
+                        if(!standalone) {
+                            // 1、job lock
+                            String lockedRecord = XxlJobAdminBootstrap.getInstance().getXxlJobLockMapper().scheduleLock();
+                        }
                         long nowTime = System.currentTimeMillis();
 
                         // scan and process job
@@ -168,6 +177,9 @@ public class JobScheduleHelper {
                             }
                         } catch (Throwable e) {
                             logger.error(">>>>>>>>>>> xxl-job, JobScheduleHelper#scheduleThread transaction commit error:{}", e.getMessage(), e);
+                        }
+                        if(standalone){
+                            lock.unlock();
                         }
                     }
                     // transaction end
